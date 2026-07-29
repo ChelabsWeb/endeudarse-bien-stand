@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Guía del Facilitador · Endeudarse bien — Versión stand v2</title>
+<style>
+  @page{ size:A4; margin:16mm 14mm }
+  body{font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#20242f; font-size:10.5pt; line-height:1.5; max-width:820px; margin:0 auto; padding:24px}
+  .top{background:#1b2a5e; color:#fff; padding:10px 16px; display:flex; justify-content:space-between; font-size:8.5pt; font-weight:700; letter-spacing:.5px; border-radius:6px}
+  .top span{color:#c9a227}
+  h1{color:#1b2a5e; font-size:20pt; margin:18px 0 2px}
+  .sub{color:#6b7186; margin-bottom:14px}
+  h2{background:#1b2a5e; color:#fff; font-size:11pt; padding:7px 12px; border-radius:6px; margin:20px 0 10px; page-break-after:avoid}
+  h2.rojo{background:#d64545} h2.oro{background:#b58b1b} h2.verde{background:#2e9e6b}
+  .box{background:#f4f5fa; border-radius:8px; padding:10px 14px; margin-bottom:8px; page-break-inside:avoid}
+  .box.amarillo{background:#fdf6e0; border:1px solid #ecd68a}
+  .box.nuevo{border-left:4px solid #2e9e6b}
+  .decir{font-style:italic; color:#2c3a6e}
+  .tip{font-size:9pt; color:#6b7186}
+  .badge{display:inline-block; background:#2e9e6b; color:#fff; font-size:7.5pt; font-weight:700; border-radius:4px; padding:1px 7px; vertical-align:middle; letter-spacing:.5px}
+  table{width:100%; border-collapse:collapse; font-size:9.5pt; margin-bottom:10px}
+  th{background:#eef0f8; color:#1b2a5e; text-align:left; padding:6px 8px}
+  td{padding:5px 8px; border-bottom:1px solid #e6e8f2}
+  b.num{color:#d64545}
+  ul{margin:4px 0 8px 20px}
+  li{margin-bottom:3px}
+  code{background:#eef0f8; padding:1px 5px; border-radius:4px; font-size:9pt}
+  .fuentes{font-size:8.5pt; color:#6b7186; line-height:1.7}
+</style>
+</head>
+<body>
+<div class="top"><div>GUÍA DEL FACILITADOR · ENDEUDARSE BIEN — VERSIÓN STAND <b>v2</b></div><div><span>Central para Vos · BCU</span></div></div>
+
+<h1>Endeudarse bien — Versión stand <span style="color:#c9a227">v2</span></h1>
+<p class="sub">Guía del facilitador · Taller 3 adaptado para el stand del BCU · Se apoya en <b>Taller3_Endeudarse_Bien_Stand_v2.pptx</b> (23 slides) y en la <b>mini-web del stand</b> (stand_bcu.html) · Actualizada julio 2026</p>
+
+<div class="box nuevo"><b>Qué cambió en la v2</b> <span class="badge">NUEVO</span><br>
+① Cifras de Joaquín actualizadas a 2026: gana <b>$40.000</b>, gasta <b>$32.700</b>, el préstamo de la moto ahora es de <b>$70.000</b> (24 cuotas de $4.599, total $110.376). El SMN de referencia es $25.383 (jul-2026).
+② La slide 20 ahora <b>descuenta la cuota nueva</b> en el camino "con préstamo": libres $2.701/mes, no $7.301 — el error de la v1 era mostrar el ingreso del delivery sin restar la cuota.
+③ <b>Mini-web del stand</b>: Valentina integrada (no se puede descarrilar), calculadora de la "tasita", puntaje 1–7 digital con historial por ronda, y QRs.
+④ Prompt v2 con blindaje anti-jailbreak, comandos <code>NUEVA RONDA</code> / <code>MODO EXPRESS</code> y dos personajes nuevos (<b>Sofía</b> y <b>Rosa</b>) para rondas repetidas.
+⑤ FAQ nueva: qué contestar sobre el <b>Programa de Reestructuración de Deudas</b>.</div>
+
+<table>
+<tr><th>Duración</th><th>Público</th><th>Formato</th></tr>
+<tr><td>Completa: ~40 min<br>Express: ~25 min (marcas »)</td><td>Grupos de 10–30 (Ciclo Básico / EMS y público general)</td><td>Kahoot + caso guiado por slides + IA (mini-web)</td></tr>
+</table>
+
+<div class="box"><b>Objetivo:</b> que cada participante salga sabiendo (1) que no toda deuda es igual, (2) que la cuota chica engaña y hay que mirar el costo total, (3) que su huella financiera queda registrada en la Central de Riesgos del BCU y en el Clearing, y (4) cuatro preguntas (PAMY) para hacerse antes de firmar cualquier préstamo.</div>
+
+<div class="box"><b>Materiales:</b> notebook + proyector · internet · Kahoot con el quiz importado · <b>mini-web abierta</b> (stand_bcu.html) con la API key ya configurada (⚙︎ API, una sola vez por dispositivo) · papelitos como respaldo del 1–7 · plan B en papel por si no hay internet (última sección).</div>
+
+<h2 class="oro">PARA VOS — lo que tenés que dominar antes de arrancar</h2>
+<div class="box"><b>La idea fuerza:</b> un préstamo no es plata extra, es un <b>compromiso de ahorro futuro</b>. El que pide prestado se compromete a comprimir su gasto de los próximos meses para devolver el capital más los intereses. Si esa capacidad de ahorro existe, también existía la opción de ahorrar primero y comprar después.</div>
+<div class="box"><b>Deuda-tapa-deuda vs. deuda por un bien:</b> pedir para cancelar otra deuda no la elimina: la muda de acreedor y casi siempre la agranda. Pedir para un bien que queda o genera ingresos puede ser una inversión — si hay plan de pago.</div>
+<div class="box"><b>El costo total:</b> la trampa clásica es mirar solo "la tasita". El número que importa es <b>cuota × cantidad de cuotas</b>. Ejemplos del PPT: $15.000 en 6 cuotas de $2.999 → $17.994; $80.000 en 36 de $3.999 → <b class="num">$143.964</b>, casi el doble. La moto de Joaquín: $70.000 en 24 de $4.599 → <b class="num">$110.376</b>.</div>
+<div class="box"><b>Central de Riesgos (BCU) vs. Clearing:</b> dos registros distintos. La <b>Central de Riesgos</b> es del BCU: solo deudas con el sistema financiero regulado y tu categoría de deudor del 1 al 5 (la UTE y los cheques NO van ahí). El <b>Clearing</b> es privado: incumplimientos más amplios (ahí SÍ puede aparecer la UTE), refinanciaciones, cheques rechazados y quién te consultó. Un incumplimiento queda 5 años. Los bancos miran los dos.</div>
+<div class="box"><b>PAMY:</b> <b>P</b>reciso (¿lo necesito? ¿YA?) · <b>A</b>horro (¿qué gasto comprimo para la cuota?) · <b>M</b>ejores (¿comparé opciones y costo total?) · <b>Y</b> después (¿cómo lo pago mes a mes? ¿plan B?).</div>
+<div class="box nuevo"><b>Datos que respaldan el Kahoot</b> <span class="badge">ACTUALIZADO</span> — salen del estudio del BCU <i>"Endeudamiento de los jóvenes en Uruguay"</i> (Documento de Trabajo 1/2024, datos a mayo 2023): los deudores menores de 30 pasaron de 40.000 (2015) a ~300.000 (2023); la mitad mantiene relaciones de crédito saludables; ~1 de cada 3 tiene todas sus deudas irrecuperables. Dato fresco para agregar de palabra: <b>más de 1 de cada 3 jóvenes que accedió al crédito por primera vez en 2025 terminó en mora</b> — cuanto más joven entrás sin plan, más riesgo.</div>
+
+<h2>Cronograma (» = se puede saltar en la versión express de ~25 min)</h2>
+<table>
+<tr><th>Min</th><th>Bloque</th><th>Slides</th><th>Qué pasa</th></tr>
+<tr><td>0–2</td><td>Apertura</td><td>1</td><td>Bienvenida, encuadre en una frase</td></tr>
+<tr><td>2–10</td><td>Kahoot: Desafío financiero</td><td>2</td><td>8 preguntas con celulares</td></tr>
+<tr><td>10–14</td><td>Qué es endeudarse + tipos</td><td>3–4</td><td>Definición y deuda-tapa-deuda vs. bien</td></tr>
+<tr><td>14–17 »</td><td>El riesgo: niveles de deudor</td><td>5</td><td>Escala 1–5 del BCU, dos datos fuertes</td></tr>
+<tr><td>17–23</td><td>El caso Joaquín</td><td>6–8</td><td>Perfil, historial, el plan de la moto</td></tr>
+<tr><td>23–26 »</td><td>Opciones de préstamo</td><td>9</td><td>Dónde conseguir plata y a qué costo</td></tr>
+<tr><td>26–30</td><td>La "tasita"</td><td>10–11</td><td>Costo total — con la calculadora de la mini-web</td></tr>
+<tr><td>30–36</td><td>Huella financiera</td><td>12–18</td><td>¿Le prestarían? CRC y Clearing, capturas y QR</td></tr>
+<tr><td>36–38</td><td>PAMY + los tres caminos</td><td>19–20</td><td>El marco de decisión » slide 20 opcional</td></tr>
+<tr><td>38–44</td><td>Actividad IA: "vos sos Joaquín"</td><td>21–22</td><td>Puntaje 1–7 en la mini-web, chat con Valentina, re-puntaje</td></tr>
+<tr><td>44–45</td><td>Cierre</td><td>23</td><td>Idea fuerza y consulta de la propia huella</td></tr>
+</table>
+<p class="tip">Versión express (~25 min): saltá los bloques » y limitá el Kahoot a las preguntas 1, 2, 6 y 8. El corazón que nunca se recorta: Joaquín (6–8), la tasita (10–11), la huella (12–18) y la IA (21–22). En la mini-web activá "Modo express".</p>
+
+<h2>Bloque 1 · Apertura y Kahoot (slides 1–2, ~10 min)</h2>
+<div class="box"><b>Slide 1 (portada)</b> — Bienvenida corta, sin agenda.<br>
+<span class="decir">Podés decir: "Vamos a hacer tres cosas: un juego con el celular, conocer a Joaquín — que quiere pedir un préstamo — y al final ustedes van a discutir con una inteligencia artificial si le conviene o no."</span></div>
+<div class="box"><b>Slide 2 (Kahoot)</b> — Lanzá el quiz. Después de cada respuesta, comentá el dato en una frase (machete abajo).</div>
+<div class="box amarillo"><b>Machete del Kahoot — una frase por pregunta:</b><br>
+<b>1.</b> Casi 300.000 de 600.000: la mitad de los jóvenes ya pidió un préstamo. Endeudarse es normal — el tema es cómo.<br>
+<b>2.</b> El motivo N°1 es la comida y los gastos de todos los días: mucha deuda no es por gustos, es por llegar a fin de mes.<br>
+<b>3.</b> "Cancelar otra deuda" es el 3er motivo: la deuda-tapa-deuda es masiva. Volvemos en un rato.<br>
+<b>4.</b> Vacaciones es el último motivo: el cliché de "se endeudan por gustos" no aparece en los datos.<br>
+<b>5.</b> La mitad está al día: buena noticia, se puede ser buen deudor.<br>
+<b>6.</b> Pero 1 de cada 3 tiene TODO irrecuperable: o te organizás o te hunde. <i>(Bonus 2026: de los que entraron al crédito por primera vez en 2025, más de 1 de cada 3 ya está en mora.)</i><br>
+<b>7.</b> 5 años registrado: un mal mes te acompaña media década.<br>
+<b>8.</b> La UTE no va al BCU pero sí puede ir al Clearing: son dos registros distintos — lo vemos con Joaquín.</div>
+
+<h2>Bloque 2 · Endeudamiento y riesgo (slides 3–5, ~7 min)</h2>
+<div class="box"><b>Slide 3 (¿Qué es endeudarse?)</b> — Remarcá "intereses". Endeudarse no es malo en sí.<br>
+<span class="decir">"Endeudarse es usar hoy plata que no es tuya y devolverla mañana con un extra: los intereses. No es malo en sí — el problema es cuándo, cuánto y para qué."</span></div>
+<div class="box"><b>Slide 4 (No toda deuda es igual)</b> — Contrastá las dos tarjetas; pedí ejemplos al grupo antes de dar los tuyos.<br>
+<span class="tip">Tip: este contraste vuelve con Joaquín — su tarjeta refinanciada es deuda-tapa-deuda; su moto sería deuda por un bien. Plantalo acá.</span></div>
+<div class="box"><b>Slide 5 (Los cinco niveles) »</b> — Recorré la escala y dejá que los dos números grandes hablen solos. La slide ahora cita la fuente (estudio BCU 2024).<br>
+<span class="decir">"El BCU te clasifica del 1 al 5 según tu atraso. La mitad de los jóvenes está en el 1. Pero 1 de cada 3 está en el 5. De esta escala depende que te presten — y a qué precio."</span></div>
+
+<h2 class="rojo">Bloque 3 · El caso Joaquín (slides 6–8, ~6 min) — CIFRAS NUEVAS</h2>
+<div class="box"><b>Slide 6 (Conocemos a Joaquín)</b> — Gana <b>$40.000</b>, gasta <b>$32.700</b>, paga $7.000 de deudas. Frená en el <b class="num">$300</b> libre: es el número que explica todo.<br>
+<span class="decir">"Joaquín no está mal: tiene laburo, gana bastante más que el salario mínimo, paga sus cosas. Pero después de gastos y deudas le quedan $300 por mes. Trescientos. ¿Qué pasa si se le rompe algo?"</span></div>
+<div class="box"><b>Slide 7 (Su historial)</b> — Los cuatro ítems con sus etiquetas. Conectá la tarjeta refinanciada con la slide 4.<br>
+<span class="tip">Tip: votación a mano alzada: ¿cuál de las cuatro cosas es la más grave? (La interesante es la UTE: parece lo más inocente y es la que figura como incumplimiento.)</span></div>
+<div class="box"><b>Slide 8 (El plan)</b> — Ahora el préstamo es de <b>$70.000</b> (una 110cc de trabajo a precios 2026). Presentalo con entusiasmo genuino: es un plan razonable.<br>
+<span class="decir">"El plan no es ninguna locura: pedir $70.000, comprarse una moto y sumar $7.000 por mes con delivery. Deuda por un bien que genera ingresos, de manual. Las dos preguntas del millón: ¿le conviene? ¿y el banco… le prestaría?"</span><br>
+<span class="tip">Tip: no adelantes tu opinión en ningún momento: la decisión la trabajan ellos con la IA al final.</span></div>
+
+<h2>Bloque 4 · Opciones y la "tasita" (slides 9–11, ~7 min)</h2>
+<div class="box"><b>Slide 9 (¿Dónde consigue la plata?) »</b> — Una frase por tarjeta; detenete solo en la banda roja final (préstamos informales: sin reglas — no).</div>
+<div class="box"><b>Slide 10 (La cuota chica engaña)</b> — Tapá el total, hacé estimar al grupo, recién ahí mostralo.<br>
+<span class="decir">"$80.000 en cuotas de $3.999. La cuota parece nada, ¿no? ¿Cuánto creen que termina pagando? … $143.964. Casi el doble. La cuenta que te salva: cuota por cantidad de cuotas, SIEMPRE."</span><br>
+<span class="tip">Tip: es el momento "wow" — dos segundos de silencio después del número.</span></div>
+<div class="box nuevo"><b>Mini-web: calculadora de la tasita</b> <span class="badge">NUEVO</span> — después del "wow", abrí la pestaña 🧮 de la mini-web y calculá EN VIVO el préstamo de la moto de Joaquín (botón precargado: $70.000 · 24 × $4.599 → $110.376). Los cuadraditos azules/rojos se dibujan solos. Si sobra tiempo, invitá a alguien del público a calcular una oferta real que tenga en el celular.</div>
+<div class="box"><b>Slide 11 (¿Cuotas para quién?)</b> — Azules para Joaquín, rojas para la financiera.<br>
+<span class="decir">"De 36 cuotas, 20 pagan la plata que usaste vos… y 16 son solo para la financiera. Casi la mitad de tu esfuerzo no compra nada: paga el costo de no poder esperar."</span></div>
+
+<h2>Bloque 5 · La huella financiera (slides 12–18, ~6 min)</h2>
+<div class="box"><b>Slide 12 (¿Le prestarían?)</b> — Votación a mano alzada SÍ/NO antes de seguir. Anotá mentalmente la proporción.</div>
+<div class="box"><b>Slide 13 (Central de Riesgos del BCU)</b> — La sorpresa está en el "NO registra": la UTE y los cheques no van acá. "¿Entonces Joaquín zafa? … falta el segundo registro."</div>
+<div class="box"><b>Slide 14 (Captura consultadeuda + QR)</b> — Momento 100% de stand: que escaneen AHORA (también está en la pestaña 🔗 de la mini-web). El formulario pide cédula y el período en formato año-mes (por ejemplo, el mes pasado).<br>
+<span class="tip">Tip liceo: muchos no van a figurar — "si no aparecés, tu huella está limpia: el desafío es mantenerla así".</span></div>
+<div class="box"><b>Slide 15 (Clearing de Informes)</b> — Los cuatro ítems y el "5 años" gigante. Acá cae la ficha de las preguntas 7 y 8 del Kahoot.</div>
+<div class="box"><b>Slide 16 (Captura MiClearing + QR)</b> — El otro espejo. <span class="tip">No prometas que el informe es gratuito ni digas precios: los planes del Clearing cambian.</span></div>
+<div class="box"><b>Slide 17 (La huella en limpio)</b> — Repasá pros y contras de cada registro y cerrá con el veredicto: puede que le presten, pero más caro y con más requisitos. La huella se cobra sola.<br>
+<span class="tip">Tip: volvé a la votación de la slide 12: "¿alguien cambió de opinión?" — ensayo general del 1–7.</span></div>
+<div class="box"><b>Slide 18 (Huella = reputación)</b> — Leéla despacio y pasá. No agregues nada.</div>
+
+<h2 class="verde">Bloque 6 · PAMY y los tres caminos (slides 19–20, ~3 min)</h2>
+<div class="box"><b>Slide 19 (PAMY)</b> — Las cuatro preguntas antes de firmar; hacé que el grupo las lea en voz alta. Avisá que la IA les va a hacer exactamente estas preguntas.</div>
+<div class="box"><b>Slide 20 (Los tres caminos) »</b> — <b>Ojo, cambió en la v2:</b> la tercera columna ahora resta la cuota nueva.<br>
+<span class="decir">"Hoy le quedan $300. Si espera 4 meses y termina el préstamo del auto, $4.300. Con la moto: suma $7.000 de delivery pero paga $4.599 de cuota nueva → le quedan $2.701… durante los primeros 4 meses, y después mejora. Los tres caminos existen: la diferencia no es la suerte, es el plan."</span><br>
+<span class="tip">Tip: si alguien nota que "esperar 4 meses" gana al principio pero "moto" gana a largo plazo — ¡oro! Esa tensión (sacrificio hoy vs. ingreso mañana, si todo sale bien) es exactamente lo que Valentina va a explorar.</span></div>
+
+<h2 class="rojo">Bloque 7 · Actividad con IA (slides 21–22, ~8 min)</h2>
+<div class="box nuevo"><b>Con la mini-web (recomendado)</b> <span class="badge">NUEVO</span><br>
+1. Pestaña 📊: cada participante toca su puntaje 1–7 en fase "ANTES" (o a dedos si el dispositivo es uno solo — vos cargás los votos).<br>
+2. Pestaña 💬: elegí el personaje y dictado colectivo — el grupo acuerda cada respuesta en voz alta, vos tipeás. Valentina pide el puntaje inicial ella misma, después el plan.<br>
+3. Al cierre de Valentina: pestaña 📊, fase "DESPUÉS", re-votación. El promedio, el movimiento y las barras se muestran solos.<br>
+4. Botón "✔ Cerrar ronda": archiva la ronda — al final del día tenés el historial completo (cuántas rondas, cuánto se movió el puntaje en cada una) para reportar el impacto del stand.<br>
+5. Para el grupo siguiente: "↻ Nueva ronda". Sin repegar prompts.</div>
+<div class="box"><b>Sin mini-web (plan B digital)</b> — prompt v2 pegado en ChatGPT/Claude (archivo <code>Prompt_IA_Asesora_v2.md</code>). Comandos: <code>NUEVA RONDA</code>, <code>MODO EXPRESS</code>, <code>PERSONAJE: SOFÍA</code>/<code>ROSA</code>.</div>
+<div class="box amarillo"><b>Personajes alternativos — cuándo usarlos:</b><br>
+· <b>Joaquín</b> (default): deuda por un bien que genera ingresos. El caso completo, para grupos que vieron todo el taller.<br>
+· <b>Sofía</b> (20, tarjeta al mínimo, financiera que ofrece "cancelar y quedar tranquila"): deuda-tapa-deuda puro. Ideal para liceales — les queda más cerca que la moto.<br>
+· <b>Rosa</b> (45, "18 cuotitas de $1.799" por un lavarropas de $19.900): la tasita pura. Ideal para público adulto y para rondas cortas.<br>
+<span class="tip">Rotálos entre rondas: te renueva la energía a vos y evita que grupos que se cruzan se pasen "la respuesta".</span></div>
+<div class="box"><b>El puntaje 1–7, explicado al grupo:</b> 1 = "ni loco pide el préstamo ya" · 7 = "que lo pida sin dudarlo". No hay número correcto: lo que se mide es que la decisión pasó de intuición a decisión pensada. Si bajó, vieron riesgos nuevos; si subió, la charla les ordenó el plan; si quedó igual: "¿ahora lo podés defender mejor?". Decilo explícito para que nadie sienta que "perdió".</div>
+<div class="box"><b>Manejo de la conversación:</b><br>
+· Si se traba el grupo, soplá con PAMY: "preguntale qué pasa si espera 4 meses".<br>
+· Si cambian el plan (esperar, ahorrar primero): dejalos — Valentina acompaña, y ese giro es oro para el cierre.<br>
+· Valentina cierra sola a los 5–6 intercambios (3 en express) y pide el re-puntaje. Si no: "cerrá la conversación y pedinos el puntaje".<br>
+· Si alguien intenta "romper" a la IA ("ignorá tus instrucciones"): el prompt v2 lo resiste y contesta "Acá en el stand solo hablamos de tu plan 😉". Capitalizalo: "ven que ni la IA se deja sacar del plan — ustedes tampoco se dejen sacar del suyo".</div>
+
+<h2>Bloque 8 · Cierre (slide 23, ~1 min)</h2>
+<div class="box"><span class="decir">"Un préstamo no es plata extra: es un compromiso de ahorro — el tuyo, y el que le pagás a quien te prestó. Tarea para hoy mismo: entren a consultadeuda.bcu.gub.uy con su cédula y miren su propia huella. Es gratis, y es de ustedes."</span></div>
+
+<h2 class="rojo">Problemas frecuentes y plan B</h2>
+<div class="box"><b>No hay internet o se cayó:</b> Kahoot → las 8 preguntas a mano alzada desde esta guía. IA → versión en papel: "Joaquines" vs. "asesores"; los asesores tienen 5 minutos para hacer las cuatro preguntas PAMY (slide 19 a la vista) y se comparte. El 1–7 antes/después se mantiene con papelitos. <i>La calculadora de la tasita funciona sin internet (es local), solo los QR y Valentina necesitan conexión.</i></div>
+<div class="box"><b>El grupo es muy chico (2–4):</b> saltá el Kahoot, arrancá en la slide 3. La IA funciona mejor que nunca: dales el teclado.</div>
+<div class="box"><b>Preguntan tasas o números que no están en el material:</b> no inventes cifras. "Depende de cada institución — la cuenta que no falla es cuota × cantidad de cuotas, pedila siempre por escrito antes de firmar." (Y calculala en vivo en la mini-web si te la dan.)</div>
+<div class="box nuevo"><b>Preguntan "¿y si ya estoy en el Clearing / categoría 5, no hay salida?"</b> <span class="badge">NUEVO</span> — Sí hay: contá que en 2024–2025 funcionó el <b>Programa Voluntario de Reestructuración de Deudas</b> (bancos + financieras, coordinado con BCU y MEF): se cancelaron automáticamente las deudas de ~117.000 personas (saldos chicos) y otras ~95.000 reestructuraron sin intereses. El mensaje: la huella se puede reconstruir — el primer paso es mirarla (consultadeuda) y acercarse a la institución o a la Unidad de Defensa del Consumidor del MEF. No prometas condiciones: los programas cambian.</div>
+<div class="box"><b>Alguien cuenta una situación de deuda personal difícil:</b> agradecé, no des consejo individual delante del grupo, y acercale los canales del BCU (bcueduca y portal del usuario financiero) al final.</div>
+<div class="box amarillo"><b>Checklist antes de cada ronda:</b> PPT v2 en slide 1 · Kahoot con PIN listo · mini-web abierta con API configurada (⚙︎) y ronda nueva · papelitos de respaldo · esta guía a mano.</div>
+
+<h2>Fuentes de la actualización 2026</h2>
+<p class="fuentes">
+· BCU — "Endeudamiento de los jóvenes en Uruguay", Documento de Trabajo 1/2024: bcu.gub.uy/Estadisticas-e-Indicadores/Documentos de Trabajo/1.2024.pdf<br>
+· la diaria (mar-2024) — "Radiografía del endeudamiento de los jóvenes en Uruguay"<br>
+· Presidencia/BCU/ABPU (2024-25) — Programa Voluntario de Reestructuración de Deudas: ~117.600 deudas canceladas, ~95.400 reestructuradas<br>
+· MTSS — Salario Mínimo Nacional 2026: $24.572 (ene) / $25.383 (jul)<br>
+· Central de Riesgos: consultadeuda.bcu.gub.uy · Clearing: clearing.com.uy/personas (verificados jul-2026)
+</p>
+</body>
+</html>
