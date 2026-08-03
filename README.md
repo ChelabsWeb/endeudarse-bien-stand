@@ -9,7 +9,9 @@ Materiales del taller **"Endeudarse bien"** para el stand del BCU (*Central para
 Un solo archivo HTML, funciona **offline** en cualquier tablet o compu (también sirve `Joaquin_12_Meses.html` descargado). Modo kiosco, ranking del día, sonido sintetizado, cero dependencias.
 
 - **Modo Duelo**: 2 jugadores pasa-la-tablet, mismos eventos, corona para el ganador.
-- **Modo Sala**: varias máquinas compiten a la vez (1 vs 1 vs 1). Todas ponen el mismo código de 4 letras → mismos eventos para todos, ranking en vivo mes a mes y podio final. Requiere internet (Supabase Realtime); ideal para talleres con grupos y pocas máquinas: se juega por tandas o por equipos alrededor de cada pantalla.
+- **Modo Sala**: varias máquinas compiten a la vez (1 vs 1 vs 1) con nombres de equipo. Todas ponen el mismo código de 4 letras → mismos eventos para todos, ranking en vivo mes a mes, timer de decisión de 45 s y podio final. Requiere internet (Supabase Realtime); ideal para talleres con grupos y pocas máquinas: se juega por tandas o por equipos alrededor de cada pantalla.
+- **Modo Proyector**: una máquina extra entra a la sala en "solo mirar" (botón *Proyector* tras poner el código) y muestra el tablero gigante para todo el grupo: equipos, puntajes, progreso del año y huella en vivo. El facilitador arranca la partida (y la revancha) desde ahí.
+- **QR "llevate el juego"** en la constancia final: los participantes lo escanean y se llevan el juego al celular.
 - **Rejugable**: pool de 9 eventos sorteados + el shock del Mes 7.
 - **PWA**: abierta una vez desde la URL, queda cacheada y funciona sin internet.
 - **Estadísticas del stand**: 5 toques en el membrete de la portada abren el panel del día (partidas, promedio, % huella limpia).

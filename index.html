@@ -293,6 +293,27 @@ body.j1 #hud{border-top-color:var(--rosa)}
 #salaSub{font-weight:700;margin-bottom:16px;color:var(--muted);letter-spacing:1px}
 #podioCols{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;width:100%;max-width:900px}
 .dCol.yo{outline:4px solid var(--amarillo);outline-offset:2px}
+/* timer de decisión (modo sala) */
+#salaTimer{display:inline-block;vertical-align:middle;margin-left:10px;padding:6px 14px;border:3px solid var(--tinta);border-radius:999px;background:var(--papel2);font-weight:800;font-size:clamp(14px,2vw,18px);box-shadow:3px 3px 0 var(--tinta)}
+#salaTimer.rojo{background:var(--rojo);color:#fff}
+@keyframes titila{50%{opacity:.25}}
+#salaTimer.tit{animation:titila .7s infinite}
+/* pantalla espectador (proyector) */
+#espectador{align-items:center;justify-content:center;padding:22px;gap:16px;overflow-y:auto}
+#espectador .kick{font-weight:800;letter-spacing:3px;color:var(--azul);font-size:clamp(13px,1.8vw,18px)}
+#espectador h2{font-size:clamp(30px,5vw,54px);text-shadow:3px 3px 0 var(--rosa);text-align:center}
+#espCols{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;width:100%;max-width:1100px}
+.eCol{flex:1;min-width:250px;max-width:350px;background:var(--papel2);border:3px solid var(--tinta);box-shadow:7px 7px 0 var(--tinta);padding:22px;text-align:center;position:relative}
+.eCol .nom{font-size:clamp(20px,2.8vw,30px)}
+.eCol .sc{font-family:ui-monospace,Menlo,monospace;font-size:clamp(38px,5.6vw,62px);font-weight:800;margin:6px 0}
+.eCol .barra{height:16px;border:3px solid var(--tinta);border-radius:999px;overflow:hidden;background:#fff;margin:8px 0 4px}
+.eCol .barra i{display:block;height:100%;background:var(--azul);transition:width .5s}
+.eCol .sub{font-weight:700;font-size:clamp(12px,1.7vw,15px);color:var(--muted);letter-spacing:1px}
+.eCol .dots{display:flex;gap:5px;justify-content:center;margin-top:8px}
+.eCol .corona{position:absolute;top:-34px;left:50%;transform:translateX(-50%) rotate(-8deg);width:56px;height:56px;color:var(--amarillo);filter:drop-shadow(2px 2px 0 var(--tinta))}
+/* segundo QR: llevate el juego */
+#franja2{display:flex;align-items:center;gap:12px;text-align:left;margin-top:8px}
+#franja2 img{width:64px;height:64px;border:2.5px solid var(--tinta);border-radius:4px;flex-shrink:0}
 
 @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
 </style>
@@ -393,6 +414,7 @@ body.j1 #hud{border-top-color:var(--rosa)}
     <div id="obs"></div>
     <div id="medallero"></div>
     <div id="franja"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAF0AAABdAQMAAAD9v/iAAAAABlBMVEUbHzr/1QDzh1a2AAABFUlEQVR42o1UvW3GIBB9jgs6vAASa9CxklnAsRfgW8md10BiAbujQL6cpU9KUuQuiMJIT0/v586g79Pw96MANYe6BiB84Mf59UCl1gG6A18JtoYy7f4OxWowi56aCqtnxKyxUaNt77Oi7e00K06fWHKEjZyOxDa0ujUMh6yNNqrZ1DOMcm7X7gYq1jCnrK1Px7hCdtpnOAs3kZsktj4QEo1Xo1W0cHKw6DBVhrHN6zHrLzG3tHs6/OtAEp2esaRjvI0bJBi36YmwRP9qsraSODqqIqzbwKU7/pqUFpit3rFAmbeeiDFFdPps1mJ45BTY+rSABWPWVoYnfDFY9AUsn+SzslmcGHfqRG3stMzGn0r1//sjfQFoRAZh6kFhBwAAAABJRU5ErkJggg==" alt="QR consultadeuda"><span>SACALE FOTO Y ESCANEÁ EL QR<br>Tu huella real, gratis: consultadeuda.bcu.gub.uy</span></div>
+    <div id="franja2"><img src="data:image/png;base64,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" alt="QR del juego"><span>LLEVATE EL JUEGO A TU CELU<br>Escaneá y jugalo cuando quieras, con quien quieras.</span></div>
   </div>
   <div id="recibo"></div>
   <div id="finBtns">
@@ -443,7 +465,10 @@ body.j1 #hud{border-top-color:var(--rosa)}
   <div class="salaSlots" id="slotsCode"></div>
   <div class="salaSlots" id="slotsIni" style="display:none"></div>
   <div id="salaTeclas"></div>
-  <button class="btn" style="margin-top:6px" onclick="show('home')">Volver</button>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:6px">
+    <button class="btn" id="btnProyector" onclick="entrarProyector()"><svg class="ic"><use href="#i-red"/></svg> Proyector: solo mirar</button>
+    <button class="btn" onclick="show('home')">Volver</button>
+  </div>
 </section>
 
 <section class="screen" id="lobby">
@@ -471,6 +496,17 @@ body.j1 #hud{border-top-color:var(--rosa)}
     <button class="btn amarillo dsp" onclick="arrancar()"><svg class="ic"><use href="#i-replay"/></svg> Revancha</button>
     <button class="btn" onclick="abrirTeclado()"><svg class="ic"><use href="#i-copa"/></svg> Anotarme en el ranking</button>
     <button class="btn" onclick="salirSala()">Salir de la sala</button>
+  </div>
+</section>
+
+<!-- ================= ESPECTADOR (proyector) ================= -->
+<section class="screen" id="espectador">
+  <div class="kick">SALA <span id="espCode"></span> · MISMOS EVENTOS PARA TODOS</div>
+  <h2 class="dsp" id="espEstado">Conectando…</h2>
+  <div id="espCols"></div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:10px">
+    <button class="btn amarillo grande dsp" id="espArrancar" style="display:none" onclick="arrancar()">¡Arrancar! <svg class="ic"><use href="#i-flecha"/></svg></button>
+    <button class="btn" onclick="salirSala()">Salir</button>
   </div>
 </section>
 
@@ -781,7 +817,7 @@ function empezarDuelo(){
   show('juego'); banner(0, ()=>render());
 }
 function postFeedback(){
-  if(SALA&&SALA.playing) salaProg();
+  if(SALA&&SALA.playing) salaProg(S.i+1);
   if(!DUELO){ avanzar(); return; }
   if(dTurn===0){
     dTurn=1; S=DS[1]; S.i=DS[0].i; setJTheme();
@@ -822,7 +858,7 @@ function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.r
 function render(){
   const e=ordenEventos[S.i];
   const ev=$('evento');
-  let inner=`<div class="mesChip dsp pop">${DUELO?('J'+(dTurn+1)+' · '):''}${e.mes} · ${S.i+1}/10</div>
+  let inner=`<div class="mesChip dsp pop">${DUELO?('J'+(dTurn+1)+' · '):''}${e.mes} · ${S.i+1}/10</div>${SALA&&SALA.playing?'<div id="salaTimer" class="mono">0:45</div>':''}
     <h2 id="evTitulo" class="dsp">${e.tit}</h2>`;
   if(e.skin==='push'){
     inner+=`<div class="push"><div class="apphead"><div class="appicon">$YA</div><div class="appname">$YA · Préstamos</div><div class="hora">ahora</div></div><div class="cuerpo">${e.txt}</div></div>`;
@@ -851,6 +887,7 @@ function render(){
     cont.appendChild(b);
   });
   hud();
+  if(SALA&&SALA.playing) armarTimer();
 }
 function hud(){
   $('hPlata').textContent=fmt(S.plata);
@@ -865,6 +902,7 @@ function hud(){
 function elegir(oi, btn){
   const e=ordenEventos[S.i], o=e.ops[oi], r=o.fx(S);
   audioInit(); sfxTap();
+  clearInterval(salaTimerInt);
   document.querySelectorAll('.op').forEach(x=>{ if(x!==btn){ x.style.opacity='.25'; } x.style.pointerEvents='none'; });
   btn.classList.add('picked');
   const prev={plata:S.plata, fondo:S.fondo, int:S.int};
@@ -942,7 +980,7 @@ function salirBocha(){
     return;
   }
   S.plata += bochaAct.fx.plata;
-  if(SALA&&SALA.playing) salaProg();
+  if(SALA&&SALA.playing) salaProg(S.i+1);
   show('juego'); avanzar();
 }
 
@@ -1099,6 +1137,7 @@ function salaListo(){
   else { if(sIni.join('').trim().length<2){ sfxNo(); return; } entrarSala(); }
 }
 function pintarSala(){
+  $('btnProyector').style.display = sPaso===0?'':'none';
   $('salaTit').textContent = sPaso===0?'Código de sala':'Nombre del equipo';
   $('salaHint').textContent = sPaso===0?'Elijan un código de 4 letras y pónganlo igual en todas las máquinas.':'Tu nombre o el del equipo (hasta 12 letras): así los ven las otras máquinas.';
   const rC=$('slotsCode'); rC.innerHTML='';
@@ -1107,34 +1146,42 @@ function pintarSala(){
   $('slotsIni').innerHTML='<div class="nameBox dsp">'+(sIni.join('').replace(/ /g,'&nbsp;'))+'<span class="caret"></span></div>';
 }
 function loadSB(){ return window.supabase?Promise.resolve():new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
-function entrarSala(){
-  const code=sCode.join(''), ini=sIni.join('').trim();
-  $('lobbyCode').textContent=code;
-  $('lobbyEstado').textContent='CONECTANDO…';
-  $('lobbyList').innerHTML=''; $('btnArrancar').style.display='none';
-  show('lobby');
+function entrarProyector(){ if(sCode.length!==4){ sfxNo(); return; } entrarSala(true); }
+function entrarSala(spec){
+  const code=sCode.join(''), ini=spec?'PROYECTOR':sIni.join('').trim();
+  if(spec){ $('espCode').textContent=code; $('espEstado').textContent='CONECTANDO…'; $('espCols').innerHTML=''; $('espArrancar').style.display='none'; show('espectador'); }
+  else {
+    $('lobbyCode').textContent=code;
+    $('lobbyEstado').textContent='CONECTANDO…';
+    $('lobbyList').innerHTML=''; $('btnArrancar').style.display='none';
+    show('lobby');
+  }
   loadSB().then(()=>{
     if(!sbClient) sbClient=window.supabase.createClient(SB_URL,SB_KEY);
     const id=Math.random().toString(36).slice(2,9);
-    SALA={code, ini, id, ronda:0, players:{}, prog:{}, playing:false, festejado:false};
+    SALA={code, ini, id, ronda:0, players:{}, prog:{}, playing:false, festejado:false, spec:!!spec};
     const ch=sbClient.channel('bcu12m:'+code,{config:{broadcast:{self:true},presence:{key:id}}});
     SALA.ch=ch;
     ch.on('presence',{event:'sync'},()=>{ if(!SALA||SALA.ch!==ch) return;
       const st=ch.presenceState(); SALA.players={};
-      Object.keys(st).forEach(k=>{ if(st[k][0]) SALA.players[k]={ini:st[k][0].ini}; });
-      pintarLobby(); pintarPodio(); });
-    ch.on('broadcast',{event:'start'},({payload})=>{ if(!SALA||SALA.ch!==ch) return; SALA.ronda=payload.ronda; SALA.festejado=false; arrancarCuenta(); });
-    ch.on('broadcast',{event:'prog'},({payload})=>{ if(!SALA||SALA.ch!==ch) return; if(!(SALA.prog[payload.id]&&SALA.prog[payload.id].fin)) SALA.prog[payload.id]=payload; pintarLive(); pintarPodio(); });
-    ch.on('broadcast',{event:'fin'},({payload})=>{ if(!SALA||SALA.ch!==ch) return; SALA.prog[payload.id]=payload; pintarLive(); pintarPodio(); });
+      Object.keys(st).forEach(k=>{ if(st[k][0]&&!st[k][0].spec) SALA.players[k]={ini:st[k][0].ini}; });
+      pintarLobby(); pintarPodio(); pintarEspectador(); });
+    ch.on('broadcast',{event:'start'},({payload})=>{ if(!SALA||SALA.ch!==ch) return; SALA.ronda=payload.ronda; SALA.festejado=false; SALA.prog={}; arrancarCuenta(); });
+    ch.on('broadcast',{event:'prog'},({payload})=>{ if(!SALA||SALA.ch!==ch) return; if(!(SALA.prog[payload.id]&&SALA.prog[payload.id].fin)) SALA.prog[payload.id]=payload; pintarLive(); pintarPodio(); pintarEspectador(); });
+    ch.on('broadcast',{event:'fin'},({payload})=>{ if(!SALA||SALA.ch!==ch) return; SALA.prog[payload.id]=payload; pintarLive(); pintarPodio(); pintarEspectador(); });
     ch.subscribe(st=>{ if(!SALA||SALA.ch!==ch) return;
-      if(st==='SUBSCRIBED'){ ch.track({ini}); $('lobbyEstado').textContent='SALA ABIERTA · ESPERANDO A LAS OTRAS MÁQUINAS'; $('btnArrancar').style.display=''; }
-      else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'){ $('lobbyEstado').textContent='SIN CONEXIÓN · REVISÁ EL INTERNET'; }
+      if(st==='SUBSCRIBED'){
+        ch.track({ini, spec:!!spec});
+        if(SALA.spec){ $('espEstado').textContent='ESPERANDO EQUIPOS…'; pintarEspectador(); }
+        else { $('lobbyEstado').textContent='SALA ABIERTA · ESPERANDO A LAS OTRAS MÁQUINAS'; $('btnArrancar').style.display=''; }
+      }
+      else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'){ $(SALA.spec?'espEstado':'lobbyEstado').textContent='SIN CONEXIÓN · REVISÁ EL INTERNET'; }
     });
-  }).catch(()=>{ $('lobbyEstado').textContent='EL MODO SALA NECESITA INTERNET'; });
+  }).catch(()=>{ $(spec?'espEstado':'lobbyEstado').textContent='EL MODO SALA NECESITA INTERNET'; });
 }
 function salirSala(){
   if(SALA&&SALA.ch&&sbClient) sbClient.removeChannel(SALA.ch);
-  SALA=null; $('salaLive').style.display='none'; show('home');
+  SALA=null; clearInterval(salaTimerInt); $('salaLive').style.display='none'; show('home');
 }
 function pintarLobby(){
   if(!SALA) return;
@@ -1151,19 +1198,59 @@ function arrancarCuenta(){
   const int=setInterval(()=>{ n--;
     if(!SALA){ clearInterval(int); ov.classList.remove('on'); return; }
     if(n>0){ $('goN').textContent=n; sfxTick(); }
-    else { clearInterval(int); ov.classList.remove('on'); sfxCoin(); empezarSala(); }
+    else { clearInterval(int); ov.classList.remove('on'); sfxCoin();
+      if(SALA.spec){ show('espectador'); pintarEspectador(); } else empezarSala(); }
   },800);
 }
 function empezarSala(){
   DUELO=false; document.body.classList.remove('j0','j1');
   armarPartida(mulberry32(xmur3(SALA.code+'#'+SALA.ronda)()));
-  S=nuevoEstado(); SALA.playing=true; SALA.prog={};
+  S=nuevoEstado(); SALA.playing=true;
   $('salaLive').style.display='flex';
-  show('juego'); render(); salaProg();
+  show('juego'); render(); salaProg(0);
 }
 /* mismo desglose que el score final, sin medallas (se otorgan al cierre) */
 function scoreParcial(s){ return Math.max(0,s.plata+s.fondo)+Math.round(s.fondo*0.5)-Math.round(Math.max(0,s.int)*1.5)-s.marcas.length*8000+s.bonusRacha; }
-function salaProg(){ if(!SALA||!SALA.playing||!SALA.ch) return; SALA.ch.send({type:'broadcast',event:'prog',payload:{id:SALA.id, ini:SALA.ini, mes:Math.min(S.i+1,10), score:scoreParcial(S)}}); }
+/* n = meses ya completados (0 a 10) */
+function salaProg(n){ if(!SALA||!SALA.playing||!SALA.ch) return; SALA.ch.send({type:'broadcast',event:'prog',payload:{id:SALA.id, ini:SALA.ini, mes:Math.min(n,10), score:scoreParcial(S), marcas:S.marcas.length}}); }
+let salaTimerInt=null;
+function armarTimer(){
+  clearInterval(salaTimerInt);
+  const el=$('salaTimer'); if(!el) return;
+  let t=45; el.textContent='0:45'; el.classList.remove('rojo','tit');
+  salaTimerInt=setInterval(()=>{ t--;
+    const e=$('salaTimer'); if(!e){ clearInterval(salaTimerInt); return; }
+    if(t<0){ e.textContent='¡DECIDAN!'; e.classList.add('rojo','tit'); clearInterval(salaTimerInt); sfxNo(); return; }
+    e.textContent='0:'+String(t).padStart(2,'0');
+    if(t<=10){ e.classList.add('rojo'); sfxTick(); }
+  },1000);
+}
+function pintarEspectador(){
+  if(!SALA||!SALA.spec||!$('espectador').classList.contains('on')) return;
+  const ids=[...new Set([...Object.keys(SALA.prog),...Object.keys(SALA.players)])];
+  const rows=ids.map(k=>({ ini:(SALA.players[k]&&SALA.players[k].ini)||(SALA.prog[k]&&SALA.prog[k].ini)||'???', ...(SALA.prog[k]||{score:0,mes:0,marcas:0}), en:!!SALA.prog[k], id:k }));
+  rows.sort((a,b)=>(b.score||0)-(a.score||0));
+  const jug=rows.filter(r=>r.en);
+  const todos=jug.length>0&&jug.every(r=>r.fin);
+  const enJuego=jug.length>0&&!todos;
+  $('espEstado').textContent = rows.length===0?'ESPERANDO EQUIPOS…' : todos?'¡AÑO TERMINADO!' : enJuego?'EN VIVO':'EQUIPOS LISTOS';
+  const cols=['var(--azul)','var(--rosa)','var(--verde)','var(--rojo)'];
+  $('espCols').innerHTML=rows.map((r,i)=>{
+    const dots=Array.from({length:5},(_,d)=>`<div class="hd${d<(r.marcas||0)?' m':''}"></div>`).join('');
+    return `<div class="eCol" style="border-top:12px solid ${cols[i%4]}">
+      ${todos&&i===0?'<svg class="corona va"><use href="#i-corona"/></svg>':''}
+      <div class="nom dsp">${r.ini}</div>
+      <div class="sc">${(r.score||0).toLocaleString('es-UY')}</div>
+      <div class="barra"><i style="width:${(r.fin?10:(r.mes||0))*10}%"></i></div>
+      <div class="sub">${r.fin?'AÑO COMPLETO':(r.en?(r.mes>0?'LLEVA '+r.mes+' DE 10 MESES':'ARRANCANDO…'):'EN LA SALA')}</div>
+      <div class="sub" style="margin-top:6px">HUELLA</div>
+      <div class="dots">${dots}</div>
+    </div>`;
+  }).join('');
+  $('espArrancar').style.display = (rows.length>0&&!enJuego)?'':'none';
+  $('espArrancar').innerHTML=(todos?'Revancha ':'¡Arrancar! ')+'<svg class="ic"><use href="#i-flecha"/></svg>';
+  if(todos&&!SALA.festejado){ SALA.festejado=true; sfxFanfa(); confetti(80); }
+}
 function pintarLive(){
   if(!SALA) return;
   const arr=Object.values(SALA.prog).sort((a,b)=>b.score-a.score);
@@ -1173,9 +1260,9 @@ function verPodio(){ show('salaFin'); pintarPodio(); }
 function pintarPodio(){
   if(!SALA||!$('salaFin').classList.contains('on')) return;
   const ids=[...new Set([...Object.keys(SALA.prog),...Object.keys(SALA.players)])];
-  const rows=ids.map(k=>({ ini:(SALA.players[k]&&SALA.players[k].ini)||(SALA.prog[k]&&SALA.prog[k].ini)||'???', ...(SALA.prog[k]||{score:0,mes:0}), id:k }));
+  const rows=ids.map(k=>({ ini:(SALA.players[k]&&SALA.players[k].ini)||(SALA.prog[k]&&SALA.prog[k].ini)||'???', ...(SALA.prog[k]||{score:0,mes:0}), en:!!SALA.prog[k], id:k }));
   rows.sort((a,b)=>(b.score||0)-(a.score||0));
-  const jugadas=rows.filter(r=>r.fin||r.mes>0);
+  const jugadas=rows.filter(r=>r.en);
   const todos=jugadas.length>0&&jugadas.every(r=>r.fin);
   const cols=['var(--azul)','var(--rosa)','var(--verde)','var(--rojo)'];
   $('salaSub').textContent = todos?'AÑO TERMINADO · MISMOS EVENTOS PARA TODOS':'EN VIVO · MISMOS EVENTOS PARA TODOS';
@@ -1190,7 +1277,7 @@ function pintarPodio(){
            <div class="fila"><span>Categoría BCU</span><span>${r.cat}</span></div>
            <div class="fila"><span>Marcas Clearing</span><span>${r.marcas}</span></div>
            <div class="fila"><span>Medallas</span><span>${r.med}</span></div>`
-        : `<div class="fila" style="justify-content:center"><span>${r.mes>0?'JUGANDO · MES '+r.mes+'/10':'EN LA SALA · SIN ARRANCAR'}</span></div>`}
+        : `<div class="fila" style="justify-content:center"><span>${r.en?'JUGANDO · '+(r.mes||0)+'/10 MESES':'EN LA SALA · SIN ARRANCAR'}</span></div>`}
     </div>`).join('');
   if(todos&&!SALA.festejado){ SALA.festejado=true; if(rows[0]&&rows[0].id===SALA.id){ sfxFanfa(); confetti(60); } else sfxMeh(); }
 }
