@@ -311,6 +311,13 @@ body.j1 #hud{border-top-color:var(--rosa)}
 .eCol .sub{font-weight:700;font-size:clamp(12px,1.7vw,15px);color:var(--muted);letter-spacing:1px}
 .eCol .dots{display:flex;gap:5px;justify-content:center;margin-top:8px}
 .eCol .corona{position:absolute;top:-34px;left:50%;transform:translateX(-50%) rotate(-8deg);width:56px;height:56px;color:var(--amarillo);filter:drop-shadow(2px 2px 0 var(--tinta))}
+#espMalas{width:100%;max-width:1100px;background:var(--papel2);border:3px solid var(--tinta);box-shadow:7px 7px 0 var(--tinta);padding:18px 22px;margin-top:6px}
+#espMalas .mTit{font-size:clamp(17px,2.4vw,24px);color:var(--rojo);margin-bottom:10px}
+#espMalas .mRow{border-top:2px dashed rgba(27,31,58,.3);padding:9px 0 7px}
+#espMalas .mRow:first-of-type{border-top:none}
+#espMalas .mHead{display:flex;align-items:center;gap:10px;font-size:clamp(13px,1.9vw,17px)}
+#espMalas .mN{background:var(--rojo);color:#fff;border:2.5px solid var(--tinta);border-radius:4px;padding:2px 10px;font-size:clamp(10px,1.4vw,13px);box-shadow:2px 2px 0 var(--tinta);flex-shrink:0}
+#espMalas .mLec{font-size:clamp(12px,1.7vw,15px);margin-top:4px;color:var(--tinta)}
 /* segundo QR: llevate el juego */
 #franja2{display:flex;align-items:center;gap:12px;text-align:left;margin-top:8px}
 #franja2 img{width:64px;height:64px;border:2.5px solid var(--tinta);border-radius:4px;flex-shrink:0}
@@ -358,7 +365,7 @@ body.j1 #hud{border-top-color:var(--rosa)}
 <section class="screen" id="intro">
   <div class="mesChip dsp">ASÍ SE JUEGA</div>
   <div class="introRow caja"><svg class="ic"><use href="#i-bille"/></svg><b>Sos Joaquín. Sueldo justo, deudas viejas.</b></div>
-  <div class="introRow caja"><svg class="ic"><use href="#i-flecha"/></svg><b>10 decisiones. 3 minutos. Cada peso cuenta.</b></div>
+  <div class="introRow caja"><svg class="ic"><use href="#i-flecha"/></svg><b>12 meses, una decisión por mes. Cada peso cuenta.</b></div>
   <div class="introRow caja"><svg class="ic"><use href="#i-huella"/></svg><b>Cuidá tu huella: cada clavo te sigue 5 años.</b></div>
   <button class="btn amarillo grande dsp" style="margin-top:10px" onclick="empezar()">¡Dale! <svg class="ic"><use href="#i-flecha"/></svg></button>
 </section>
@@ -504,6 +511,7 @@ body.j1 #hud{border-top-color:var(--rosa)}
   <div class="kick">SALA <span id="espCode"></span> · MISMOS EVENTOS PARA TODOS</div>
   <h2 class="dsp" id="espEstado">Conectando…</h2>
   <div id="espCols"></div>
+  <div id="espMalas" style="display:none"></div>
   <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:10px">
     <button class="btn amarillo grande dsp" id="espArrancar" style="display:none" onclick="arrancar()">¡Arrancar! <svg class="ic"><use href="#i-flecha"/></svg></button>
     <button class="btn" onclick="salirSala()">Salir</button>
@@ -790,8 +798,36 @@ const QUIZES = [
     fx:s=>({big:'NO', fxTxt:'Ojalá: son 16 cuotas enteras para la financiera.', lec:'36 × $3.999 = $143.964. Casi el doble de lo que pediste.'})},
    {t:'C · 16 cuotas enteras', d:'', tag:'buena',
     fx:s=>({plata:2000, flags:{quizOk:1}, big:'+$2.000', fxTxt:'¡Exacto! 20 cuotas para vos, 16 para la financiera.', lec:'De cada 36 cuotas, 16 no compran nada tuyo. Compará el TOTAL, no la cuotita.'})}
+  ]},
+ {mes:'MES •', tit:'Chequeo rápido: el pago mínimo', skin:'quiz', txt:'Debés $10.000 en la tarjeta y todos los meses pagás el mínimo, religiosamente. ¿Qué pasa con la deuda?',
+  ops:[
+   {t:'A · Se achica, de a poquito', d:'', tag:'mala',
+    fx:s=>({big:'NO', fxTxt:'El mínimo apenas cubre los intereses del mes.', lec:'El pago mínimo es la deuda eterna: meses pagando y el saldo ni se entera. A la tarjeta se le gana con plan.'})},
+   {t:'B · Se AGRANDA', d:'', tag:'buena',
+    fx:s=>({plata:2000, flags:{quizOk:1}, big:'+$2.000', fxTxt:'¡Exacto! Lo barato sale caro.', lec:'Con el mínimo, los intereses corren más rápido que tus pagos. Pago total o plan de ataque: no hay tercera.'})},
+   {t:'C · Queda igual', d:'', tag:'media',
+    fx:s=>({big:'CASI', fxTxt:'Ojalá: con el tiempo se agranda.', lec:'El mínimo no congela la deuda: la alimenta. Mirá el saldo del resumen, no la cuota.'})}
+  ]},
+ {mes:'MES •', tit:'Chequeo rápido: el celular de Juana', skin:'quiz', txt:'A Juana se le rompió el celu. Sale $4.500 al contado… o "12 cuotitas de $500, ni las sentís". ¿Cuánto termina costando en cuotitas?',
+  ops:[
+   {t:'A · $4.500, igual que al contado', d:'', tag:'mala',
+    fx:s=>({big:'$6.000', fxTxt:'Eso paga Juana: $1.500 de interés. Un tercio de celular extra.', lec:'12 × $500 = $6.000. La cuota chica es el precio del apuro. La cuenta, siempre: cuota × cuotas.'})},
+   {t:'B · $6.000', d:'', tag:'buena',
+    fx:s=>({plata:2000, flags:{quizOk:1}, big:'+$2.000', fxTxt:'¡Exacto! $1.500 regalados por no hacer la cuenta.', lec:'Entre contado y 12 cuotitas hay 33% de recargo. Si podés esperar y ahorrar, sos tu propio prestamista.'})},
+   {t:'C · $5.000', d:'', tag:'media',
+    fx:s=>({big:'NO', fxTxt:'Son $6.000: 33% de recargo.', lec:'La financiera vive de que nadie multiplique. Cuota × cuotas, antes de firmar.'})}
+  ]},
+ {mes:'MES •', tit:'Chequeo rápido: ¿cuánto dura una marca?', skin:'quiz', txt:'Te clavaste con una cuenta y quedaste anotado en el Clearing. Al mes siguiente pagás todo. ¿Cuánto dura la marca?',
+  ops:[
+   {t:'A · Se borra al pagar', d:'', tag:'mala',
+    fx:s=>({big:'NO', fxTxt:'Pagar está bien… pero la marca queda igual.', lec:'Las marcas duran 5 años desde el registro, aunque canceles la deuda. Mejor no marcarse.'})},
+   {t:'B · 5 años', d:'', tag:'buena',
+    fx:s=>({plata:2000, flags:{quizOk:1}, big:'+$2.000', fxTxt:'¡Exacto! Por eso cada clavo pesa tanto.', lec:'5 años con la marca a cuestas: el banco la ve cada vez que pedís algo. La huella se cuida antes.'})},
+   {t:'C · Para siempre', d:'', tag:'media',
+    fx:s=>({big:'CASI', fxTxt:'Son 5 años. Igual: larguísimo.', lec:'5 años es más que un liceo entero. La factura "inocente" no existe.'})}
   ]}
 ];
+const TOTAL_MESES=12;
 const IMPREVISTOS = [
  {mes:'MES 8', tit:'Se murió la heladera', skin:'ticket', tktLineas:['SERVICIO TÉCNICO EL ÑATO','------------------------','DIAGNÓSTICO ... FUNDIDA','ARREGLO ....... NO VALE','HELADERA NUEVA . $12.000'], txt:'Sin aviso, como siempre. Y no es opcional.',
   ops:[
@@ -823,11 +859,11 @@ let S=null, ordenEventos=[];
 const SELLOS = {buena:['BIEN AHÍ','FINO, FINO','ASÍ SE HACE'], media:['TA… PUEDE SER','ZAFÁS','NI FU NI FA'], mala:['UF','AY, JOAQUÍN','GOLAZO EN CONTRA']};
 
 function armarPartida(rnd){
-  const sorteo=shuffle(POOL,rnd).slice(0,2);
-  const quiz={...pick(QUIZES,rnd), mes:'MES 4'};
+  const sorteo=shuffle(POOL,rnd).slice(0,3);
+  const qz=shuffle(QUIZES,rnd).slice(0,2);
   const imprevisto=pick(IMPREVISTOS,rnd);
   bochaFix = rnd ? pick(BOCHAS,rnd) : null;
-  ordenEventos=[CORE_UTE, CORE_TARJETA, {...sorteo[0], mes:'MES 3'}, quiz, CORE_AUTO, {...sorteo[1], mes:'MES 6'}, 'BOCHA', imprevisto, CORE_MOTO, CORE_AGUI];
+  ordenEventos=[CORE_UTE, CORE_TARJETA, {...sorteo[0], mes:'MES 3'}, {...qz[0], mes:'MES 4'}, CORE_AUTO, {...sorteo[1], mes:'MES 6'}, 'BOCHA', imprevisto, CORE_MOTO, {...sorteo[2], mes:'MES 10'}, {...qz[1], mes:'MES 11'}, CORE_AGUI];
 }
 function verIntro(){ $('tecOverlay').classList.remove('on'); $('feedback').classList.remove('on'); show('intro'); }
 function nuevoEstado(){ return {i:0, plata:1200, fondo:0, int:0, marcas:[], flags:{}, malas:[], lecMalas:[], racha:0, mejorRacha:0, bonusRacha:0, medallas:[], ranked:false}; }
@@ -897,7 +933,7 @@ function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.r
 function render(){
   const e=ordenEventos[S.i];
   const ev=$('evento');
-  let inner=`<div class="mesChip dsp pop">${DUELO?('J'+(dTurn+1)+' · '):''}${e.mes} · ${S.i+1}/10</div>${SALA&&SALA.playing?'<div id="salaTimer" class="mono">0:45</div>':''}
+  let inner=`<div class="mesChip dsp pop">${DUELO?('J'+(dTurn+1)+' · '):''}${e.mes} · ${S.i+1}/${ordenEventos.length}</div>${SALA&&SALA.playing?'<div id="salaTimer" class="mono">0:45</div>':''}
     <h2 id="evTitulo" class="dsp">${e.tit}</h2>`;
   if(e.skin==='push'){
     inner+=`<div class="push"><div class="apphead"><div class="appicon">$YA</div><div class="appname">$YA · Préstamos</div><div class="hora">ahora</div></div><div class="cuerpo">${e.txt}</div></div>`;
@@ -1052,7 +1088,8 @@ function finalizar(){
   regStats(S, rs.cat);
   if(SALA&&SALA.playing){
     SALA.playing=false;
-    const p={id:SALA.id, ini:SALA.ini, mes:10, score:S.score, fin:true, patrimonio:rs.patrimonio, int:Math.max(0,S.int), cat:rs.cat, marcas:S.marcas.length, med:S.medallas.length};
+    const p={id:SALA.id, ini:SALA.ini, mes:TOTAL_MESES, score:S.score, fin:true, patrimonio:rs.patrimonio, int:Math.max(0,S.int), cat:rs.cat, marcas:S.marcas.length, med:S.medallas.length,
+             malas:S.malas.map((t,i)=>({t, lec:S.lecMalas[i]||''}))};
     SALA.prog[SALA.id]=p;
     SALA.ch.send({type:'broadcast', event:'fin', payload:p});
     $('btnPodio').style.display=''; $('btnReplay').style.display='none';
@@ -1250,8 +1287,8 @@ function empezarSala(){
 }
 /* mismo desglose que el score final, sin medallas (se otorgan al cierre) */
 function scoreParcial(s){ return Math.max(0,s.plata+s.fondo)+Math.round(s.fondo*0.5)-Math.round(Math.max(0,s.int)*1.5)-s.marcas.length*8000+s.bonusRacha; }
-/* n = meses ya completados (0 a 10) */
-function salaProg(n){ if(!SALA||!SALA.playing||!SALA.ch) return; SALA.ch.send({type:'broadcast',event:'prog',payload:{id:SALA.id, ini:SALA.ini, mes:Math.min(n,10), score:scoreParcial(S), marcas:S.marcas.length}}); }
+/* n = meses ya completados (0 a 12) */
+function salaProg(n){ if(!SALA||!SALA.playing||!SALA.ch) return; SALA.ch.send({type:'broadcast',event:'prog',payload:{id:SALA.id, ini:SALA.ini, mes:Math.min(n,TOTAL_MESES), score:scoreParcial(S), marcas:S.marcas.length}}); }
 let salaTimerInt=null;
 function armarTimer(){
   clearInterval(salaTimerInt);
@@ -1280,12 +1317,23 @@ function pintarEspectador(){
       ${todos&&i===0?'<svg class="corona va"><use href="#i-corona"/></svg>':''}
       <div class="nom dsp">${r.ini}</div>
       <div class="sc">${(r.score||0).toLocaleString('es-UY')}</div>
-      <div class="barra"><i style="width:${(r.fin?10:(r.mes||0))*10}%"></i></div>
-      <div class="sub">${r.fin?'AÑO COMPLETO':(r.en?(r.mes>0?'LLEVA '+r.mes+' DE 10 MESES':'ARRANCANDO…'):'EN LA SALA')}</div>
+      <div class="barra"><i style="width:${Math.round((r.fin?TOTAL_MESES:(r.mes||0))*100/TOTAL_MESES)}%"></i></div>
+      <div class="sub">${r.fin?'AÑO COMPLETO':(r.en?(r.mes>0?'LLEVA '+r.mes+' DE '+TOTAL_MESES+' MESES':'ARRANCANDO…'):'EN LA SALA')}</div>
       <div class="sub" style="margin-top:6px">HUELLA</div>
       <div class="dots">${dots}</div>
     </div>`;
   }).join('');
+  /* al terminar todos: los errores más repetidos entre equipos, con su explicación */
+  const ml=$('espMalas');
+  if(todos){
+    const agg={};
+    jug.forEach(r=>(r.malas||[]).forEach(m=>{ if(!agg[m.t]) agg[m.t]={n:0, lec:m.lec}; agg[m.t].n++; }));
+    const top=Object.entries(agg).sort((a,b)=>b[1].n-a[1].n).slice(0,3);
+    ml.style.display='';
+    ml.innerHTML = '<div class="mTit dsp">DONDE MÁS NOS CLAVAMOS</div>' + (top.length
+      ? top.map(([t,v])=>`<div class="mRow"><div class="mHead"><span class="mN dsp">${v.n} ${v.n===1?'EQUIPO':'EQUIPOS'}</span><b>${t}</b></div><div class="mLec"><b>La posta:</b> ${v.lec}</div></div>`).join('')
+      : '<div class="mRow"><div class="mLec"><b>Ningún equipo se clavó.</b> Partida impecable: cabeza fría colectiva.</div></div>');
+  } else ml.style.display='none';
   $('espArrancar').style.display = (rows.length>0&&!enJuego)?'':'none';
   $('espArrancar').innerHTML=(todos?'Revancha ':'¡Arrancar! ')+'<svg class="ic"><use href="#i-flecha"/></svg>';
   if(todos&&!SALA.festejado){ SALA.festejado=true; sfxFanfa(); confetti(80); }
@@ -1316,14 +1364,14 @@ function pintarPodio(){
            <div class="fila"><span>Categoría BCU</span><span>${r.cat}</span></div>
            <div class="fila"><span>Marcas Clearing</span><span>${r.marcas}</span></div>
            <div class="fila"><span>Medallas</span><span>${r.med}</span></div>`
-        : `<div class="fila" style="justify-content:center"><span>${r.en?'JUGANDO · '+(r.mes||0)+'/10 MESES':'EN LA SALA · SIN ARRANCAR'}</span></div>`}
+        : `<div class="fila" style="justify-content:center"><span>${r.en?'JUGANDO · '+(r.mes||0)+'/'+TOTAL_MESES+' MESES':'EN LA SALA · SIN ARRANCAR'}</span></div>`}
     </div>`).join('');
   if(todos&&!SALA.festejado){ SALA.festejado=true; if(rows[0]&&rows[0].id===SALA.id){ sfxFanfa(); confetti(60); } else sfxMeh(); }
 }
 
 /* ================= ATTRACT + IDLE ================= */
 let tickerInt=null, billeteInt=null;
-const GANCHOS=['¿Sabías que el pago mínimo puede duplicar tu deuda?','18 cuotitas de $349 = $6.282. La cuenta, siempre.','Tu huella financiera te sigue 5 años.','3 minutos. 10 decisiones. ¿Zafás?'];
+const GANCHOS=['¿Sabías que el pago mínimo puede duplicar tu deuda?','18 cuotitas de $349 = $6.282. La cuenta, siempre.','Tu huella financiera te sigue 5 años.','12 meses, 12 decisiones. ¿Llegás a diciembre sin clavos?'];
 function attractOn(){
   $('home').classList.add('attract');
   let i=0;
