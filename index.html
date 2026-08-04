@@ -268,6 +268,12 @@ body.j1 #hud{border-top-color:var(--rosa)}
 #franja{display:flex;align-items:center;gap:12px;text-align:left}
 #franja img{width:64px;height:64px;border:2.5px solid var(--tinta);border-radius:4px;flex-shrink:0}
 
+/* ====== TRIVIA ====== */
+#triviaFin{align-items:center;justify-content:center;padding:24px;gap:10px;text-align:center}
+#triviaFin h2{font-size:clamp(34px,6vw,60px);text-shadow:3px 3px 0 var(--rosa)}
+#tfScore{font-size:clamp(40px,8vw,80px);color:var(--azul)}
+#tfDetalle{font-weight:800;font-size:clamp(15px,2.2vw,20px);color:var(--muted)}
+
 /* ====== SALA (varias máquinas) ====== */
 #sala{align-items:center;justify-content:center;padding:20px;gap:14px;overflow-y:auto}
 #sala .kick{font-weight:700;letter-spacing:2px;font-size:clamp(11px,1.6vw,15px);color:var(--azul)}
@@ -354,6 +360,7 @@ body.j1 #hud{border-top-color:var(--rosa)}
   <symbol id="i-corona" viewBox="0 0 24 24"><path d="M3 9l4 4 5-7 5 7 4-4-1.5 10h-15L3 9z" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-vs" viewBox="0 0 24 24"><path d="M4 5l4 14M8 19l4-14M14 8c0-2 6-2 6 0s-6 3-6 5 6 2 6 0" transform="translate(0 3) scale(.8)"/></symbol>
   <symbol id="i-red" viewBox="0 0 24 24"><path d="M12 19h.01M8.8 15.5a4.5 4.5 0 0 1 6.4 0M5.6 12a9 9 0 0 1 12.8 0M2.5 8.5a13.5 13.5 0 0 1 19 0"/></symbol>
+  <symbol id="i-preg" viewBox="0 0 24 24"><path d="M8.8 9a3.2 3.2 0 1 1 5 2.6c-1.1.8-1.8 1.4-1.8 2.9M12 18h.01"/></symbol>
 </svg>
 
 <button class="btn" id="muteBtn" onclick="toggleMute()"><svg class="ic"><use id="muteIco" href="#i-son"/></svg></button>
@@ -367,6 +374,7 @@ body.j1 #hud{border-top-color:var(--rosa)}
     <button class="btn amarillo grande dsp" id="btnJugar" onclick="verIntro()">Jugar <svg class="ic"><use href="#i-flecha"/></svg></button>
     <button class="btn grande dsp" onclick="empezarDuelo()"><svg class="ic"><use href="#i-vs"/></svg> Duelo</button>
     <button class="btn grande dsp" onclick="verSala()"><svg class="ic"><use href="#i-red"/></svg> Sala</button>
+    <button class="btn grande dsp" onclick="empezarTrivia()"><svg class="ic"><use href="#i-preg"/></svg> Preguntas</button>
     <button class="btn" onclick="verRanking()"><svg class="ic"><use href="#i-copa"/></svg> Ranking del día</button>
   </div>
   <div id="ticker"></div>
@@ -473,6 +481,18 @@ body.j1 #hud{border-top-color:var(--rosa)}
     <button class="btn amarillo dsp" onclick="empezarDuelo()"><svg class="ic"><use href="#i-vs"/></svg> Revancha</button>
     <button class="btn" id="btnRankJ1">Anotar J1</button>
     <button class="btn" id="btnRankJ2">Anotar J2</button>
+    <button class="btn" onclick="show('home')">Inicio</button>
+  </div>
+</section>
+
+<!-- ================= TRIVIA ================= -->
+<section class="screen" id="triviaFin">
+  <div class="kick" style="font-weight:800;letter-spacing:2px;color:var(--azul)">MODO PREGUNTAS · 10 CHEQUEOS RÁPIDOS</div>
+  <h2 class="dsp" id="tfTit"></h2>
+  <div id="tfScore" class="mono dsp"></div>
+  <div id="tfDetalle"></div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:16px">
+    <button class="btn amarillo grande dsp" onclick="empezarTrivia()"><svg class="ic"><use href="#i-replay"/></svg> Otra ronda</button>
     <button class="btn" onclick="show('home')">Inicio</button>
   </div>
 </section>
@@ -768,6 +788,42 @@ const POOL = [
     fx:s=>({plata:-2900, int:1400, big:'$9.400', fxTxt:'El asterisco decía: "gastos administrativos y seguro de vida sobre saldo". Terminás pagando $9.400.', lec:'"Sin interés" con asterisco casi nunca es sin costo. La cuenta: total a pagar vs. precio contado.'})},
    {t:'Espero a juntar y lo compro el mes que viene', d:'Las changas pueden esperar 3 semanas.', tag:'media',
     fx:s=>({big:'PLAN', fxTxt:'Un mes después lo compraste al contado. Perdiste una changa en el camino, pero cero deuda.', lec:'Esperar tiene costo también. La P de PAMY se pregunta en las dos direcciones.'})}
+  ]},
+ {mes:'MES •', tit:'La app que te adelanta el sueldo', skin:'push', txt:'Llegaste al 20 con $400 en la cuenta. Una app te ofrece adelantarte $5.000 del sueldo YA, por $290 de "cargo de servicio". Total inofensivo, ¿no?',
+  ops:[
+   {t:'Lo pido todos los meses, es baratísimo', d:'$290 no es nada.', precio:'$290/mes', ad:1, tag:'mala',
+    fx:s=>({plata:-3480, int:3480, big:'$3.480', fxTxt:'Eso pagás al año por adelantarte TU propia plata.', lec:'El adelanto de sueldo es un préstamo caro disfrazado de favor: 6% por 10 días es una tasa sideral.'})},
+   {t:'Solo esta vez, y ajusto el mes que viene', d:'Un puente, no una rueda.', precio:'−$290', tag:'media',
+    fx:s=>({plata:-290, int:290, big:'−$290', fxTxt:'Zafaste el mes… si de verdad ajustás.', lec:'Una vez es un puente; todos los meses es una rueda. El problema no era el 20: era el presupuesto.'})},
+   {t:'Reviso gastos y armo un colchón de $2.000', d:'Que el 20 no me agarre más así.', tag:'buena',
+    fx:s=>({fondo:2000, plata:-2000, big:'+$2.000', fxTxt:'El mes que viene el 20 te encuentra con red propia.', lec:'Cobrate primero aunque sea $500: el colchón chico también corta la rueda del adelanto.'})}
+  ]},
+ {mes:'MES •', tit:'El celu nuevo en 24 cuotas', txt:'Tu celu anda perfecto. Pero salió el nuevo: $30.000 al contado o 24 cuotitas "accesibles" de $1.799.',
+  ops:[
+   {t:'Lo saco: son solo $1.799 por mes', d:'Todo el mundo lo tiene.', precio:'24 × $1.799', ad:1, tag:'mala',
+    fx:s=>({plata:-9000, int:13176, big:'$43.176', fxTxt:'Eso cuesta el celu de $30.000. Y en 24 meses ya está viejo.', lec:'Financiar un gusto a 2 años es pagarlo mucho después de que dejó de ser nuevo. 44% de recargo.'})},
+   {t:'Sigo con el mío y ahorro para cambiarlo', d:'Cuando muera, hay plan.', tag:'buena',
+    fx:s=>({fondo:3000, plata:-3000, big:'PLAN', fxTxt:'Tu celu sigue andando y vos, juntando.', lec:'La mejor cuota es la que te pagás a vos. El upgrade se hace con plata junta, no con deuda.'})},
+   {t:'Compro uno usado de $12.000 al contado', d:'Renovado sin deudas.', precio:'−$12.000', tag:'media',
+    fx:s=>({plata:-12000, big:'−$12.000', fxTxt:'Cambiaste sin deuda… aunque quizá no lo precisabas.', lec:'El usado al contado le gana al nuevo en cuotas. Pero la pregunta PAMY sigue: ¿lo precisabas YA?'})}
+  ]},
+ {mes:'MES •', tit:'El curso "Ingresos desde tu casa"', txt:'Un influencer vende su curso: "$14.900 en 12 cuotas de $1.490 y en un mes lo recuperás multiplicado. CUPOS LIMITADOS."',
+  ops:[
+   {t:'Lo compro: es una inversión en mí', d:'Él se ve que la hizo.', precio:'12 × $1.490', ad:1, tag:'mala',
+    fx:s=>({plata:-8940, int:2980, big:'$17.880', fxTxt:'Eso pagarás por promesas. Los ingresos multiplicados nunca llegaron.', lec:'El que tiene la fórmula de la plata fácil no la vende en cuotas: la usa. Promesa de retorno garantido = alarma.'})},
+   {t:'Busco primero lo gratuito (INEFOP, YouTube)', d:'Mismo tema, costo cero.', tag:'buena',
+    fx:s=>({big:'GRATIS', fxTxt:'Aprendiste lo mismo sin firmar nada.', lec:'Antes de pagar por aprender, agotá lo gratuito. Y desconfiá de todo lo que "se recupera solo".'})},
+   {t:'Pido opiniones y espero una semana', d:'Si es bueno hoy, es bueno en 7 días.', tag:'media',
+    fx:s=>({big:'PLAN', fxTxt:'A la semana el "cupo limitado" seguía abierto. Raro.', lec:'La urgencia inventada es la herramienta de venta número uno. Dormir la decisión es gratis.'})}
+  ]},
+ {mes:'MES •', tit:'La vaquita del regalo', txt:'En el grupo: "ponemos $800 cada uno para el regalo". Justo este mes venís con lo justo.',
+  ops:[
+   {t:'Pongo los $800 con la tarjeta y después veo', d:'No voy a quedar mal.', ad:1, tag:'mala',
+    fx:s=>({plata:-800, int:240, big:'−$1.040', fxTxt:'"Después veo" ya sabés cómo termina: con recargo.', lec:'Los gastos sociales chicos en tarjeta son los que nunca registrás. La vaquita también se presupuesta.'})},
+   {t:'Digo la verdad: este mes pongo $300', d:'Incómodo 10 segundos.', precio:'−$300', tag:'buena',
+    fx:s=>({plata:-300, big:'−$300', fxTxt:'Nadie se murió. El regalo salió igual.', lec:'Decir "hasta acá llego" también es finanzas sanas. El presupuesto se defiende hasta en el grupo.'})},
+   {t:'Le pido los $800 prestados a un compañero', d:'Se los devuelvo… en algún momento.', tag:'media',
+    fx:s=>({plata:-800, big:'−$800', fxTxt:'Cumpliste con el grupo, pero ahora debés adentro del grupo.', lec:'Deber a amigos también es deuda: se paga con plata o con la relación.'})}
   ]}
 ];
 /* QUIZ: datos reales del taller (BCU, DT 1/2024). Sale SIEMPRE uno por partida, en el mes 4. */
@@ -843,9 +899,45 @@ const QUIZES = [
     fx:s=>({plata:2000, flags:{quizOk:1}, big:'+$2.000', fxTxt:'¡Exacto! Por eso cada clavo pesa tanto.', lec:'5 años con la marca a cuestas: el banco la ve cada vez que pedís algo. La huella se cuida antes.'})},
    {t:'Para siempre', d:'', tag:'media',
     fx:s=>({big:'CASI', fxTxt:'Son 5 años. Igual: larguísimo.', lec:'5 años es más que un liceo entero. La factura "inocente" no existe.'})}
+  ]},
+ {mes:'MES •', tit:'Chequeo rápido: ¿qué te dice la TEA?', skin:'quiz', txt:'En todo préstamo tiene que figurar la TEA (tasa efectiva anual). ¿Qué es lo que te dice?',
+  ops:[
+   {t:'Cuánto interés pagás por año, para comparar préstamos', d:'', tag:'buena',
+    fx:s=>({plata:2000, flags:{quizOk:1}, big:'+$2.000', fxTxt:'¡Exacto! Es el número que deja comparar peras con peras.', lec:'La TEA es el precio real del préstamo. Entre dos ofertas, gana la de menor TEA — no la de cuota más chica.'})},
+   {t:'El valor de la cuota mensual', d:'', tag:'mala',
+    fx:s=>({big:'NO', fxTxt:'La cuota depende del plazo; la TEA es el costo por año.', lec:'Dos préstamos con la misma cuota pueden costar carísimo distinto. Pedí la TEA por escrito.'})},
+   {t:'Tu puntaje en el BCU', d:'', tag:'media',
+    fx:s=>({big:'NO', fxTxt:'Eso es la categoría de la Central de Riesgos, otra cosa.', lec:'TEA = precio del préstamo. Categoría BCU = tu nota como pagador. Las dos importan, pero no son lo mismo.'})}
+  ]},
+ {mes:'MES •', tit:'Chequeo rápido: firmar de garantía', skin:'quiz', txt:'Un amigo te pide que firmes como garantía de su préstamo. Si él deja de pagar, ¿qué pasa con vos?',
+  ops:[
+   {t:'Nada: es una formalidad', d:'', tag:'mala',
+    fx:s=>({big:'OJALÁ', fxTxt:'La deuda pasa a ser tuya, con tu huella de rehén.', lec:'Ser garantía es hacer un préstamo vos: si el otro no paga, pagás vos y la marca es tuya 5 años.'})},
+   {t:'La deuda pasa a ser mía y marca MI huella', d:'', tag:'buena',
+    fx:s=>({plata:2000, flags:{quizOk:1}, big:'+$2.000', fxTxt:'¡Exacto! Por eso la amistad no se firma.', lec:'Garantía = tu firma respalda plata ajena. Decir "no" a tiempo también es educación financiera.'})},
+   {t:'Solo me llaman para avisarme', d:'', tag:'media',
+    fx:s=>({big:'NO', fxTxt:'Te llaman… a cobrarte a vos.', lec:'El garante es el plan B del banco. Si el titular falla, el "aviso" es la cuota entera en tu cuenta.'})}
+  ]},
+ {mes:'MES •', tit:'Chequeo rápido: ¿de cuánto el colchón?', skin:'quiz', txt:'Todos dicen "armate un fondo de emergencia". ¿De cuánto conviene que sea?',
+  ops:[
+   {t:'De 3 a 6 meses de tus gastos', d:'', tag:'buena',
+    fx:s=>({plata:2000, flags:{quizOk:1}, big:'+$2.000', fxTxt:'¡Exacto! Con eso una heladera muerta no te manda a las cuotas.', lec:'3 a 6 meses de gastos es el colchón que corta la cadena imprevisto → deuda cara. Se junta de a poco.'})},
+   {t:'Con un mes alcanza y sobra', d:'', tag:'media',
+    fx:s=>({big:'CASI', fxTxt:'Un mes es el arranque, no la meta.', lec:'Un mes te salva de un susto; 3 a 6 te salvan de un problema. Lo importante: empezar, aunque sea con $500.'})},
+   {t:'No hace falta si tenés tarjeta', d:'', tag:'mala',
+    fx:s=>({big:'NO', fxTxt:'La tarjeta es el colchón MÁS CARO del mercado.', lec:'Usar la tarjeta de fondo de emergencia es pagar 40% extra por cada imprevisto. El fondo propio tiene tasa cero.'})}
+  ]},
+ {mes:'MES •', tit:'Chequeo rápido: ¿cuánto sale ver tu huella?', skin:'quiz', txt:'Querés saber cómo te ve el sistema: tu categoría BCU y tu Clearing. ¿Cuánto cuesta consultarlo?',
+  ops:[
+   {t:'Es gratis', d:'', tag:'buena',
+    fx:s=>({plata:2000, flags:{quizOk:1}, big:'+$2.000', fxTxt:'¡Exacto! consultadeuda.bcu.gub.uy, gratis y al toque.', lec:'Tu huella es tuya y verla es gratis (el Clearing: la primera del período sin costo). Mirala antes de que la mire un banco.'})},
+   {t:'Unos $500 por consulta', d:'', tag:'media',
+    fx:s=>({big:'NO', fxTxt:'Es gratis. No hay excusa.', lec:'La consulta del BCU no cuesta nada y se hace con la cédula. Conocer tu huella es el paso uno de cuidarla.'})},
+   {t:'Solo la pueden ver los bancos', d:'', tag:'mala',
+    fx:s=>({big:'NO', fxTxt:'La tuya la podés ver vos, cuando quieras.', lec:'Los bancos la miran… y vos también podés. Mejor enterarte por vos que por un crédito rechazado.'})}
   ]}
 ];
-const TOTAL_MESES=12;
+const TOTAL_MESES=15; /* 12 meses + 3 recreos de preguntas */
 const IMPREVISTOS = [
  {mes:'MES 8', tit:'Se murió la heladera', skin:'ticket', tktLineas:['SERVICIO TÉCNICO EL ÑATO','------------------------','DIAGNÓSTICO ... FUNDIDA','ARREGLO ....... NO VALE','HELADERA NUEVA . $12.000'], txt:'Sin aviso, como siempre. Y no es opcional.',
   ops:[
@@ -877,19 +969,49 @@ let S=null, ordenEventos=[];
 const SELLOS = {buena:['BIEN AHÍ','FINO, FINO','ASÍ SE HACE'], media:['TA… PUEDE SER','ZAFÁS','NI FU NI FA'], mala:['UF','AY, JOAQUÍN','GOLAZO EN CONTRA']};
 
 function armarPartida(rnd){
-  const sorteo=shuffle(POOL,rnd).slice(0,3);
-  const qz=shuffle(QUIZES,rnd).slice(0,2);
+  const sorteo=shuffle(POOL,rnd).slice(0,5);
+  const qz=shuffle(QUIZES,rnd).slice(0,3);
   const imprevisto=pick(IMPREVISTOS,rnd);
   bochaFix = rnd ? pick(BOCHAS,rnd) : null;
-  ordenEventos=[CORE_UTE, CORE_TARJETA, {...sorteo[0], mes:'MES 3'}, {...qz[0], mes:'MES 4'}, CORE_AUTO, {...sorteo[1], mes:'MES 6'}, 'BOCHA', imprevisto, CORE_MOTO, {...sorteo[2], mes:'MES 10'}, {...qz[1], mes:'MES 11'}, CORE_AGUI];
+  const R=q=>({...q, mes:'RECREO'});
+  /* 12 meses de decisiones + 3 recreos de preguntas = 15 paradas (~20 min en equipos) */
+  ordenEventos=[CORE_UTE, CORE_TARJETA, {...sorteo[0], mes:'MES 3'}, R(qz[0]), {...sorteo[1], mes:'MES 4'}, CORE_AUTO,
+                {...sorteo[2], mes:'MES 6'}, R(qz[1]), 'BOCHA', imprevisto, CORE_MOTO,
+                {...sorteo[3], mes:'MES 10'}, R(qz[2]), {...sorteo[4], mes:'MES 11'}, CORE_AGUI];
 }
 function verIntro(){ $('tecOverlay').classList.remove('on'); $('feedback').classList.remove('on'); show('intro'); }
 function nuevoEstado(){ return {i:0, plata:1200, fondo:0, int:0, marcas:[], flags:{}, malas:[], lecMalas:[], racha:0, mejorRacha:0, bonusRacha:0, medallas:[], ranked:false}; }
 function empezar(){
-  DUELO=false; document.body.classList.remove('j0','j1');
+  DUELO=false; TRIVIA=false; $('hud').style.display=''; document.body.classList.remove('j0','j1');
   armarPartida();
   S=nuevoEstado();
   show('juego'); render();
+}
+
+/* ================= MODO PREGUNTAS (trivia relámpago) ================= */
+let TRIVIA=false;
+function empezarTrivia(){
+  DUELO=false; TRIVIA=true; document.body.classList.remove('j0','j1');
+  $('tecOverlay').classList.remove('on'); $('feedback').classList.remove('on'); $('feedback').style.display='none';
+  ordenEventos=shuffle(QUIZES).slice(0,10).map((q,i)=>({...q, mes:'PREGUNTA '+(i+1)}));
+  bochaFix=null;
+  S=nuevoEstado(); S.plata=0; S.correctas=0;
+  $('hud').style.display='none';
+  show('juego'); render();
+}
+function finalizarTrivia(){
+  if(S.rendered) return; S.rendered=true;
+  const c=S.correctas||0;
+  let tit;
+  if(c===10) tit='CEREBRO BCU';
+  else if(c>=8) tit='CASI PERFECTO';
+  else if(c>=5) tit='VAS BIEN, VAS BIEN';
+  else tit='LA HUELLA SE ENTRENA';
+  $('tfTit').textContent=tit;
+  $('tfScore').textContent=c+'/10';
+  $('tfDetalle').textContent='correctas · mejor racha ×'+S.mejorRacha+' · $'+Math.max(0,S.plata).toLocaleString('es-UY')+' de bonus acumulado';
+  show('triviaFin');
+  if(c>=8){ sfxFanfa(); confetti(60); } else if(c>=5) sfxCoin(); else sfxMeh();
 }
 
 /* ================= DUELO ================= */
@@ -903,6 +1025,7 @@ function banner(j, cb){
   sfxWhoosh();
 }
 function empezarDuelo(){
+  TRIVIA=false; $('hud').style.display='';
   $('tecOverlay').classList.remove('on'); $('feedback').classList.remove('on');
   armarPartida();
   DS=[nuevoEstado(), nuevoEstado()];
@@ -1006,6 +1129,7 @@ function elegir(oi, btn){
   if(r.marca) S.marcas.push(r.marca);
   if(r.flags) Object.assign(S.flags, r.flags);
   const rachaRota=(o.tag==='mala'&&S.racha>=3)?S.racha:0;
+  if(TRIVIA&&o.tag==='buena') S.correctas++;
   let bonus=0;
   if(o.tag==='buena'){ S.racha++; S.mejorRacha=Math.max(S.mejorRacha,S.racha); if(S.racha>=3){ bonus=1500*(S.racha-2); S.bonusRacha+=bonus; } }
   else if(o.tag==='mala'){ S.racha=0; S.malas.push(e.tit); S.lecMalas.push(r.lec); }
@@ -1132,6 +1256,7 @@ function calcResumen(s){
   return { patrimonio: s.plata+s.fondo, cat: Math.min(5, 1+s.marcas.filter(m=>m!=='Consulta de crédito').length+(s.flags.tarjetaViva?1:0)) };
 }
 function finalizar(){
+  if(TRIVIA){ finalizarTrivia(); return; }
   if(S.rendered) return;
   S.rendered=true;
   const rs=calcResumen(S);
@@ -1398,7 +1523,7 @@ function arrancarCuenta(){
   },1000);
 }
 function empezarSala(){
-  DUELO=false; document.body.classList.remove('j0','j1');
+  DUELO=false; TRIVIA=false; $('hud').style.display=''; document.body.classList.remove('j0','j1');
   armarPartida(mulberry32(xmur3(SALA.code+'#'+SALA.ronda)()));
   S=nuevoEstado(); SALA.playing=true;
   $('salaLive').style.display='flex';
@@ -1453,7 +1578,7 @@ function pintarEspectador(){
       <div class="nom dsp">${r.ini}</div>
       <div class="sc"${(r.score||0)<0?' style="color:var(--rojo)"':''}>${(r.score||0).toLocaleString('es-UY')}</div>
       <div class="barra"><i style="width:${Math.round((r.fin?TOTAL_MESES:(r.mes||0))*100/TOTAL_MESES)}%"></i></div>
-      <div class="sub">${r.caido?'SE DESCONECTÓ':(r.fin?'AÑO COMPLETO':(r.en?(r.mes>0?'LLEVA '+r.mes+' DE '+TOTAL_MESES+' MESES':'ARRANCANDO…'):'EN LA SALA'))}</div>
+      <div class="sub">${r.caido?'SE DESCONECTÓ':(r.fin?'AÑO COMPLETO':(r.en?(r.mes>0?'LLEVA '+r.mes+' DE '+TOTAL_MESES:'ARRANCANDO…'):'EN LA SALA'))}</div>
       <div class="sub" style="margin-top:6px">HUELLA</div>
       <div class="dots">${dots}</div>
     </div>`;
@@ -1509,7 +1634,7 @@ function revelarGanador(){
 function pintarLive(){
   if(!SALA) return;
   const arr=Object.values(SALA.prog).sort((a,b)=>b.score-a.score);
-  $('salaLive').innerHTML=arr.map((p,i)=>`<span class="lv${p.id===SALA.id?' yo':''}${p.fin?' fin':''}">${i+1}º ${p.ini} · M${p.fin?TOTAL_MESES:(p.mes||0)} · <span${p.score<0&&p.id!==SALA.id?' style="color:#FF9AC0"':''}>${p.score.toLocaleString('es-UY')}</span>${p.fin?' · FIN':''}</span>`).join('');
+  $('salaLive').innerHTML=arr.map((p,i)=>`<span class="lv${p.id===SALA.id?' yo':''}${p.fin?' fin':''}">${i+1}º ${p.ini} · ${p.fin?TOTAL_MESES:(p.mes||0)}/${TOTAL_MESES} · <span${p.score<0&&p.id!==SALA.id?' style="color:#FF9AC0"':''}>${p.score.toLocaleString('es-UY')}</span>${p.fin?' · FIN':''}</span>`).join('');
 }
 function verPodio(){ show('salaFin'); pintarPodio(); }
 function pintarPodio(){
@@ -1536,7 +1661,7 @@ function pintarPodio(){
            <div class="fila"><span>Medallas</span><span>${r.med}</span></div>
            ${todos&&i>0?`<div class="fila" style="color:var(--rojo);font-weight:800"><span>A ${(rows[0].score-r.score).toLocaleString('es-UY')} pts del 1º</span><span></span></div>`:''}
            ${todos&&(r.score||0)<0?'<div class="fila" style="color:var(--rojo)"><span>Los intereses se comieron el año · revancha y lo dan vuelta</span></div>':''}`
-        : `<div class="fila" style="justify-content:center"><span>${r.caido?'SE DESCONECTÓ':(r.en?'JUGANDO · '+(r.mes||0)+'/'+TOTAL_MESES+' MESES':'EN LA SALA · SIN ARRANCAR')}</span></div>`}
+        : `<div class="fila" style="justify-content:center"><span>${r.caido?'SE DESCONECTÓ':(r.en?'JUGANDO · '+(r.mes||0)+'/'+TOTAL_MESES:'EN LA SALA · SIN ARRANCAR')}</span></div>`}
     </div>`).join('');
   if(todos&&!SALA.festejado){ SALA.festejado=true; if(rows[0]&&rows[0].id===SALA.id){ sfxFanfa(); confetti(60); } else sfxMeh(); }
 }
@@ -1598,7 +1723,7 @@ function resetIdle(){
   clearTimeout(idleT); clearInterval(idleCount); $('idle').classList.remove('on');
   if(SALA) return; /* en modo sala manda el facilitador, no el timer */
   const enJuego=$('juego').classList.contains('on')||$('bocha').classList.contains('on');
-  const enFinal=$('final').classList.contains('on')||$('ranking').classList.contains('on')||$('duelFin').classList.contains('on');
+  const enFinal=$('final').classList.contains('on')||$('ranking').classList.contains('on')||$('duelFin').classList.contains('on')||$('triviaFin').classList.contains('on');
   if(!enJuego && !enFinal) return;
   idleT=setTimeout(()=>{
     if(enFinal){ verIntroSilencioso(); return; }
