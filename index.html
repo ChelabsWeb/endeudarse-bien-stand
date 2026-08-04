@@ -742,7 +742,10 @@ const POOL = [
     fx:s=>({plata:-2900, int:1400, big:'$9.400', fxTxt:'El asterisco decía: "gastos administrativos y seguro de vida sobre saldo". Terminás pagando $9.400.', lec:'"Sin interés" con asterisco casi nunca es sin costo. La cuenta: total a pagar vs. precio contado.'})},
    {t:'Espero a juntar y lo compro el mes que viene', d:'Las changas pueden esperar 3 semanas.', tag:'media',
     fx:s=>({big:'PLAN', fxTxt:'Un mes después lo compraste al contado. Perdiste una changa en el camino, pero cero deuda.', lec:'Esperar tiene costo también. La P de PAMY se pregunta en las dos direcciones.'})}
-  ]},
+  ]}
+];
+/* QUIZ: datos reales del taller (BCU, DT 1/2024). Sale SIEMPRE uno por partida, en el mes 4. */
+const QUIZES = [
  {mes:'MES •', tit:'Chequeo rápido: ¿dónde aparece la UTE impaga?', skin:'quiz', txt:'Esperando el ómnibus entrás a consultadeuda.bcu.gub.uy y a MiClearing. Sin mirar: una factura de UTE impaga, ¿dónde queda registrada?',
   ops:[
    {t:'A · En la Central de Riesgos del BCU', d:'', tag:'media',
@@ -751,6 +754,42 @@ const POOL = [
     fx:s=>({plata:2000, flags:{quizOk:1}, big:'+$2.000', fxTxt:'¡Exacto! Bonus de conocimiento: te ahorraste un mal negocio.', lec:'Clearing: servicios, cheques, refinanciaciones y quién te consultó. BCU: sistema financiero y tu nota del 1 al 5.'})},
    {t:'C · En ninguno, las facturas no cuentan', d:'', tag:'mala',
     fx:s=>({big:'OJALÁ', fxTxt:'Pero no: queda en el Clearing hasta 5 años.', lec:'Todo deja huella, hasta la factura "inocente". Consultá la tuya gratis.'})}
+  ]},
+ {mes:'MES •', tit:'Chequeo rápido: ¿cuántos ya debemos?', skin:'quiz', txt:'En la parada, un amigo tira: "nadie de nuestra edad pide préstamos". En Uruguay hay unos 600.000 jóvenes de 18 a 30 años. ¿Cuántos ya pidieron un préstamo en un banco o financiera?',
+  ops:[
+   {t:'A · Unos 60.000, uno de cada diez', d:'', tag:'mala',
+    fx:s=>({big:'NO', fxTxt:'Muy corto: son muchos más.', lec:'Casi 300.000 jóvenes ya pidieron préstamo (BCU). Endeudarse es normal; endeudarse BIEN es lo raro.'})},
+   {t:'B · Casi 300.000: la mitad', d:'', tag:'buena',
+    fx:s=>({plata:2000, flags:{quizOk:1}, big:'+$2.000', fxTxt:'¡Exacto! 297.329 jóvenes ya pasaron por ventanilla.', lec:'La mitad de los jóvenes ya tiene deuda. Por eso esto se aprende ANTES de firmar, no después.'})},
+   {t:'C · Casi todos: 9 de cada 10', d:'', tag:'media',
+    fx:s=>({big:'CASI', fxTxt:'Te pasaste: es la mitad. Igual son un montón.', lec:'297.329 de 600.000. La deuda llega temprano; la educación financiera tiene que llegar antes.'})}
+  ]},
+ {mes:'MES •', tit:'Chequeo rápido: ¿para qué nos endeudamos?', skin:'quiz', txt:'De cada 100 hogares uruguayos que se endeudan, ¿cuál es el motivo número UNO?',
+  ops:[
+   {t:'A · Vacaciones y gustos', d:'', tag:'mala',
+    fx:s=>({big:'NO', fxTxt:'Vacaciones es el ÚLTIMO de la lista: 2 de cada 100.', lec:'"Se endeudan por gustos" es un mito. El podio real es mucho menos glamoroso.'})},
+   {t:'B · La comida y los gastos de todos los días', d:'', tag:'buena',
+    fx:s=>({plata:2000, flags:{quizOk:1}, big:'+$2.000', fxTxt:'¡Exacto! 25 de cada 100: gastos corrientes.', lec:'La mayoría se endeuda para llegar a fin de mes. Presupuestar no es un lujo: es la salida.'})},
+   {t:'C · Comprar casa o auto', d:'', tag:'media',
+    fx:s=>({big:'NO', fxTxt:'Entre los dos juntan 20 de cada 100. El número uno es más cotidiano.', lec:'El podio real: gastos de todos los días (25), cuentas del mes (18) y… pagar OTRAS deudas (17).'})}
+  ]},
+ {mes:'MES •', tit:'Chequeo rápido: la temida categoría 5', skin:'quiz', txt:'El BCU te pone una nota del 1 al 5 según cómo pagás. De los jóvenes menores de 30 con deudas, ¿cuántos están en categoría 5 —todas sus deudas incobrables—?',
+  ops:[
+   {t:'A · Casi ninguno, son jóvenes', d:'', tag:'mala',
+    fx:s=>({big:'OJALÁ', fxTxt:'Es uno de cada tres. Uno. De. Cada. Tres.', lec:'30 de cada 100 jóvenes deudores arrancaron su vida financiera con la huella quemada por 5 años.'})},
+   {t:'B · 1 de cada 3', d:'', tag:'buena',
+    fx:s=>({plata:2000, flags:{quizOk:1}, big:'+$2.000', fxTxt:'¡Exacto! Y vos acá, jugando para no ser uno de ellos.', lec:'La mitad de los jóvenes paga impecable (categoría 1)… y un tercio tiene todo incobrable. La diferencia se define en decisiones como las de este juego.'})},
+   {t:'C · 1 de cada 20', d:'', tag:'media',
+    fx:s=>({big:'NO', fxTxt:'Muchísimos más: uno de cada tres.', lec:'Categoría 5 = todas las deudas incobrables. Te sigue 5 años a todos lados.'})}
+  ]},
+ {mes:'MES •', tit:'Chequeo rápido: ¿cuántas cuotas son tuyas?', skin:'quiz', txt:'Un préstamo de $80.000 se devuelve en 36 cuotas de $3.999. De esas 36 cuotas, ¿cuántas se van enteras en intereses para la financiera?',
+  ops:[
+   {t:'A · Ninguna: las 36 pagan mi préstamo', d:'', tag:'mala',
+    fx:s=>({big:'$143.964', fxTxt:'Eso devolvés en total por $80.000. Hay $63.964 de intereses.', lec:'La cuota chica esconde el total gigante. La cuenta antes de firmar, siempre: cuota × cuotas.'})},
+   {t:'B · Unas 4 cuotas', d:'', tag:'media',
+    fx:s=>({big:'NO', fxTxt:'Ojalá: son 16 cuotas enteras para la financiera.', lec:'36 × $3.999 = $143.964. Casi el doble de lo que pediste.'})},
+   {t:'C · 16 cuotas enteras', d:'', tag:'buena',
+    fx:s=>({plata:2000, flags:{quizOk:1}, big:'+$2.000', fxTxt:'¡Exacto! 20 cuotas para vos, 16 para la financiera.', lec:'De cada 36 cuotas, 16 no compran nada tuyo. Compará el TOTAL, no la cuotita.'})}
   ]}
 ];
 const IMPREVISTOS = [
@@ -784,11 +823,11 @@ let S=null, ordenEventos=[];
 const SELLOS = {buena:['BIEN AHÍ','FINO, FINO','ASÍ SE HACE'], media:['TA… PUEDE SER','ZAFÁS','NI FU NI FA'], mala:['UF','AY, JOAQUÍN','GOLAZO EN CONTRA']};
 
 function armarPartida(rnd){
-  const meses=['MES 3','MES 4','MES 6'];
-  const sorteo=shuffle(POOL,rnd).slice(0,3).map((e,i)=>({...e, mes:meses[i]}));
+  const sorteo=shuffle(POOL,rnd).slice(0,2);
+  const quiz={...pick(QUIZES,rnd), mes:'MES 4'};
   const imprevisto=pick(IMPREVISTOS,rnd);
   bochaFix = rnd ? pick(BOCHAS,rnd) : null;
-  ordenEventos=[CORE_UTE, CORE_TARJETA, sorteo[0], sorteo[1], CORE_AUTO, sorteo[2], 'BOCHA', imprevisto, CORE_MOTO, CORE_AGUI];
+  ordenEventos=[CORE_UTE, CORE_TARJETA, {...sorteo[0], mes:'MES 3'}, quiz, CORE_AUTO, {...sorteo[1], mes:'MES 6'}, 'BOCHA', imprevisto, CORE_MOTO, CORE_AGUI];
 }
 function verIntro(){ $('tecOverlay').classList.remove('on'); $('feedback').classList.remove('on'); show('intro'); }
 function nuevoEstado(){ return {i:0, plata:1200, fondo:0, int:0, marcas:[], flags:{}, malas:[], lecMalas:[], racha:0, mejorRacha:0, bonusRacha:0, medallas:[], ranked:false}; }
