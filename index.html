@@ -304,6 +304,23 @@ body.j1 #hud{border-top-color:var(--rosa)}
 #salaLive .lv{color:var(--papel);font-family:ui-monospace,Menlo,monospace;font-size:clamp(12px,1.8vw,15px);font-weight:700;padding:2px 12px;border:2px solid rgba(243,238,226,.4);border-radius:999px}
 #salaLive .lv.yo{background:var(--amarillo);color:var(--tinta);border-color:var(--tinta)}
 #salaLive .lv.fin{border-color:var(--verde)}
+/* marcador de ronda (sala v2): pausa de ~6s entre paradas, todas las pantallas ven la misma tabla */
+#mkOv{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--tinta);z-index:60;padding:20px}
+#mkOv.on{display:flex}
+#mkOv .kick{color:var(--amarillo);font-weight:800;letter-spacing:3px;font-size:clamp(13px,2vw,18px)}
+#mkRows{display:flex;flex-direction:column;gap:10px;width:min(560px,92vw)}
+.mkRow{display:flex;align-items:center;gap:12px;background:var(--papel2);border:3px solid var(--tinta);box-shadow:5px 5px 0 rgba(0,0,0,.35);border-radius:8px;padding:10px 16px;animation:cardIn .3s cubic-bezier(.34,1.56,.64,1) both}
+.mkRow.yo{background:var(--amarillo)}
+.mkRow.caida{opacity:.5}
+.mkPos{font-size:clamp(18px,3vw,26px);min-width:44px}
+.mkNom{font-size:clamp(17px,2.6vw,24px);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mkD{font-weight:800;min-width:44px;text-align:center;font-size:clamp(13px,2vw,17px);opacity:.4}
+.mkD.up{color:var(--verdeTxt);opacity:1}
+.mkD.dn{color:var(--rojo);opacity:1}
+.mkSc{font-weight:800;font-size:clamp(16px,2.6vw,22px)}
+#mkNota{color:var(--papel);font-weight:800;letter-spacing:2px;font-size:clamp(12px,1.8vw,16px);min-height:20px}
+#fbEspera{margin-top:14px;font-weight:800;letter-spacing:1.5px;font-size:clamp(12px,1.8vw,15px);animation:pulsa 1.6s ease-in-out infinite}
+@keyframes pulsa{0%,100%{opacity:.75}50%{opacity:.35}}
 #salaFin{overflow-y:auto;align-items:center;padding:20px 14px 40px}
 #salaFin h2{font-size:clamp(28px,4.6vw,46px);margin:8px 0 4px;text-shadow:3px 3px 0 var(--rosa)}
 #salaSub{font-weight:700;margin-bottom:16px;color:var(--muted);letter-spacing:1px}
@@ -414,6 +431,7 @@ body.j1 #hud{border-top-color:var(--rosa)}
     <div id="fbMarca"><svg class="ic"><use href="#i-huella"/></svg> QUEDÓ MARCA EN TU HUELLA · 5 AÑOS</div>
     <div id="fbRacha"></div>
     <br><button class="btn amarillo" id="fbBtn">Seguir <svg class="ic"><use href="#i-flecha"/></svg></button>
+    <div id="fbEspera" style="display:none"></div>
   </div>
 </div>
 
@@ -529,6 +547,13 @@ body.j1 #hud{border-top-color:var(--rosa)}
   <div class="kick">MISMOS EVENTOS · GANA EL MEJOR AÑO</div>
 </div>
 
+<!-- ================= MARCADOR DE RONDA (sala v2) ================= -->
+<div id="mkOv">
+  <div class="kick" id="mkKick"></div>
+  <div id="mkRows"></div>
+  <div id="mkNota"></div>
+</div>
+
 <section class="screen" id="salaFin">
   <h2 class="dsp">Podio de la sala</h2>
   <div id="salaSub"></div>
@@ -548,6 +573,7 @@ body.j1 #hud{border-top-color:var(--rosa)}
   <div id="espMalas" style="display:none"></div>
   <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:10px">
     <button class="btn amarillo grande dsp" id="espArrancar" style="display:none" onclick="arrancar()">¡Arrancar! <svg class="ic"><use href="#i-flecha"/></svg></button>
+    <button class="btn" id="espSaltar" style="display:none" onclick="saltarRonda()">Saltar ronda</button>
     <button class="btn" id="espCerrar" style="display:none" onclick="cerrarAno()">Cerrar el año</button>
     <button class="btn amarillo" id="btnRetryE" style="display:none" onclick="reintentar()">Reintentar</button>
     <button class="btn" onclick="salirSala(this)">Salir</button>
@@ -974,7 +1000,8 @@ function armarPartida(rnd){
   const imprevisto=pick(IMPREVISTOS,rnd);
   bochaFix = rnd ? pick(BOCHAS,rnd) : null;
   const R=q=>({...q, mes:'RECREO'});
-  /* 12 meses de decisiones + 3 recreos de preguntas = 15 paradas (~20 min en equipos) */
+  /* 12 meses de decisiones + 3 recreos de preguntas = 15 paradas (~20 min en equipos)
+     ⚠️ 'BOCHA' va 9ª (índice 8): el host de sala lo sabe por BOCHA_IDX — mantener sincronizados */
   ordenEventos=[CORE_UTE, CORE_TARJETA, {...sorteo[0], mes:'MES 3'}, R(qz[0]), {...sorteo[1], mes:'MES 4'}, CORE_AUTO,
                 {...sorteo[2], mes:'MES 6'}, R(qz[1]), 'BOCHA', imprevisto, CORE_MOTO,
                 {...sorteo[3], mes:'MES 10'}, R(qz[2]), {...sorteo[4], mes:'MES 11'}, CORE_AGUI];
@@ -1033,7 +1060,7 @@ function empezarDuelo(){
   show('juego'); banner(0, ()=>render());
 }
 function postFeedback(){
-  if(SALA&&SALA.playing) salaProg(S.i+1);
+  if(SALA&&SALA.playing) return; /* sala v2: el avance lo maneja el host (ronda/marcador), no el botón */
   if(!DUELO){ avanzar(); return; }
   if(dTurn===0){
     dTurn=1; S=DS[1]; S.i=DS[0].i; setJTheme();
@@ -1081,7 +1108,8 @@ function render(){
   } else if(e.skin==='ticket'){
     inner+=`<div class="tkt">${e.tktLineas.map(l=>l).join('<br>')}</div><p id="evTexto">${e.txt}</p>`;
   } else if(e.skin==='quiz'){
-    inner+=`<p id="evTexto">${e.txt}</p><div id="qTimer"><i class="corre"${SALA&&SALA.playing?' style="animation-duration:45s"':''}></i></div>`;
+    const qe=SALA&&SALA.playing?Math.max(0,(Date.now()-SALA.rondaT0)/1000):0;
+    inner+=`<p id="evTexto">${e.txt}</p><div id="qTimer"><i class="corre"${SALA&&SALA.playing?` style="animation-duration:${SALA.rondaDur}s;animation-delay:-${qe.toFixed(1)}s"`:''}></i></div>`;
   } else {
     inner+=`<p id="evTexto">${e.txt}</p>`;
   }
@@ -1131,8 +1159,10 @@ function elegir(oi, btn){
   const rachaRota=(o.tag==='mala'&&S.racha>=3)?S.racha:0;
   if(TRIVIA&&o.tag==='buena') S.correctas++;
   let bonus=0;
-  if(o.tag==='buena'){ S.racha++; S.mejorRacha=Math.max(S.mejorRacha,S.racha); if(S.racha>=3){ bonus=1500*(S.racha-2); S.bonusRacha+=bonus; } }
+  if(o.tag==='buena'){ S.racha++; S.mejorRacha=Math.max(S.mejorRacha,S.racha); if(S.racha>=3){ bonus=1500*(S.racha-2); S.bonusRacha+=bonus; S.plata+=bonus; /* a la billetera ya: así el prog de sala lo incluye; el feedback solo lo anuncia */ } }
   else if(o.tag==='mala'){ S.racha=0; S.malas.push(e.tit); S.lecMalas.push(r.lec); }
+  /* sala v2: la decisión se reporta al elegir (el host cierra la ronda cuando respondieron todos) */
+  if(SALA&&SALA.playing){ S.respondida=true; SALA.fase='esperando'; SALA.fbT0=Date.now(); salaProg(S.i+1); salaSnap(); }
   setTimeout(()=>{
     if(r.plata){ countUp($('hPlata'),prev.plata,S.plata); bump($('stPlata'),r.plata>0); delta($('stPlata'),r.plata); }
     if(r.fondo){ countUp($('hFondo'),prev.fondo,S.fondo); bump($('stFondo'),r.fondo>0); delta($('stFondo'),r.fondo); }
@@ -1161,11 +1191,16 @@ function abrirFeedback(tag, r, bonus, rachaRota){
   $('fbMarca').className = r.marca ? 'va' : ''; $('fbMarca').style.display = r.marca?'':'none';
   if(r.marca) $('fbMarca').classList.add('va');
   const fr=$('fbRacha');
-  if(bonus>0){ fr.style.display='block'; fr.classList.remove('rota'); fr.innerHTML=`<svg class="ic"><use href="#i-frio"/></svg> Racha ×${S.racha}: +$${bonus.toLocaleString('es-UY')} de bonus cabeza fría`; S.plata+=bonus; bonusPend=bonus; }
+  if(bonus>0){ fr.style.display='block'; fr.classList.remove('rota'); fr.innerHTML=`<svg class="ic"><use href="#i-frio"/></svg> Racha ×${S.racha}: +$${bonus.toLocaleString('es-UY')} de bonus cabeza fría`; bonusPend=bonus; /* ya está en la billetera (elegir); acá solo se anuncia */ }
   else if(rachaRota>0){ fr.style.display='block'; fr.classList.add('rota'); fr.innerHTML=`<svg class="ic"><use href="#i-frio"/></svg> SE CORTÓ LA RACHA ×${rachaRota}`; bonusPend=0; }
   else { fr.style.display='none'; bonusPend=0; }
   /* coreografía: sello → número → qué pasó → la posta → recién ahí el botón */
   const big=$('fbBig'), ftx=$('fbTxt'), flc=$('fbLec'), btn=$('fbBtn');
+  /* sala v2: no hay botón — el feedback es la sala de espera hasta que el host manda el marcador */
+  const enSala=!!(SALA&&SALA.playing);
+  btn.style.display=enSala?'none':'';
+  $('fbEspera').style.display=enSala?'':'none';
+  if(enSala) pintarEspera(); /* fbT0 se ancló en elegir: el mínimo de lectura cubre también la coreografía */
   big.style.opacity='0'; ftx.style.opacity='0'; flc.style.opacity='0';
   btn.style.opacity='.3'; btn.style.pointerEvents='none';
   fb.style.display='flex'; void fb.offsetWidth; fb.classList.add('on');
@@ -1188,6 +1223,9 @@ function avanzar(){
   S.i++;
   if(S.i>=ordenEventos.length){ finalizar(); return; }
   if(ordenEventos[S.i]==='BOCHA'){ mostrarBocha(); return; }
+  slideRender();
+}
+function slideRender(){
   const ev=$('evento');
   ev.style.transition='transform .18s ease-in,opacity .18s'; ev.style.transform='translateX(-36px)'; ev.style.opacity='0';
   sfxWhoosh();
@@ -1202,6 +1240,7 @@ function mostrarBocha(){
   $('bochaTxt').textContent=bochaAct.txt;
   /* coreografía en 3 tiempos: golpe → título → el número aterriza → recién ahí el botón */
   const tit=$('bochaTit'), txt=$('bochaTxt'), fx=$('bochaFx'), btn=$('bochaBtn');
+  btn.disabled=false; btn.innerHTML='Seguir <svg class="ic"><use href="#i-flecha"/></svg>'; /* pudo quedar en "ESPERANDO…" de la partida anterior */
   tit.style.opacity='0'; txt.style.opacity='0'; fx.style.opacity='0'; fx.textContent=''; btn.style.visibility='hidden';
   show('bocha'); sweep(500,120,0.5,'sawtooth',0.15); thump();
   document.body.classList.add('shake'); setTimeout(()=>document.body.classList.remove('shake'),450);
@@ -1226,7 +1265,14 @@ function salirBocha(){
     return;
   }
   S.plata += bochaAct.fx.plata;
-  if(SALA&&SALA.playing) salaProg(S.i+1);
+  if(SALA&&SALA.playing){
+    /* sala v2: la bocha también espera al host (que la cierra cuando todos tocaron Seguir o a los 15s) */
+    S.bochaOk=true; S.respondida=true; SALA.fase='esperando';
+    salaProg(S.i+1); salaSnap();
+    const btn=$('bochaBtn'); btn.style.visibility='visible'; btn.disabled=true; btn.textContent='ESPERANDO AL RESTO…';
+    setTimeout(()=>bump($('stPlata'), bochaAct.fx.plata>0),300);
+    return;
+  }
   show('juego'); avanzar();
   setTimeout(()=>{ bump($('stPlata'), bochaAct.fx.plata>0); delta($('stPlata'), bochaAct.fx.plata); },550);
 }
@@ -1369,7 +1415,19 @@ function verRanking(miIni){
 /* ================= SALA · VARIAS MÁQUINAS (Supabase Realtime) ================= */
 const SB_URL='https://okywobvelfvyhnzvjycm.supabase.co';
 const SB_KEY='sb_publishable_ccIpVjzVTq9F4X9Epe8dbA_atsnVJ63';
+/* sala v2 (canal bcu12m2): rondas sincronizadas tipo Kahoot. El host (proyector; sin proyector,
+   la máquina de menor id) abre cada parada, la cierra cuando respondieron todos o vence su reloj,
+   y manda el marcador ya ordenado. Los timers de las máquinas son cosméticos: el cierre es del host. */
+const RONDA_DUR=45, BOCHA_DUR=15, MARCADOR_MS=6000, FB_MIN_MS=2500;
+const BOCHA_IDX=8; /* ⚠️ posición de 'BOCHA' en armarPartida: si cambiás el orden de paradas, actualizá esto */
 let SALA=null, sbClient=null, sCode=[], sIni=[], sPaso=0;
+
+/* ---- identidad y snapshot por pestaña: un F5 en pleno taller no mata al equipo ---- */
+function salaSaveId(){ if(!SALA) return; try{ sessionStorage.setItem('bcu12m2_sala', JSON.stringify({code:SALA.code, id:SALA.id, ini:SALA.ini, spec:!!SALA.spec, ronda:SALA.ronda})); }catch(e){} }
+function salaSaved(){ try{ return JSON.parse(sessionStorage.getItem('bcu12m2_sala')||'null'); }catch(e){ return null; } }
+function salaSnap(){ if(!SALA||!S) return; try{ sessionStorage.setItem('bcu12m2_S', JSON.stringify({ronda:SALA.ronda, S})); }catch(e){} }
+function leerSnap(){ try{ return JSON.parse(sessionStorage.getItem('bcu12m2_S')||'null'); }catch(e){ return null; } }
+function salaWipe(){ try{ sessionStorage.removeItem('bcu12m2_sala'); sessionStorage.removeItem('bcu12m2_S'); }catch(e){} }
 /* PRNG con semilla: mismo código de sala => mismos eventos en todas las máquinas */
 function xmur3(str){ let h=1779033703^str.length; for(let i=0;i<str.length;i++){ h=Math.imul(h^str.charCodeAt(i),3432918353); h=(h<<13)|(h>>>19); } return ()=>{ h=Math.imul(h^(h>>>16),2246822507); h=Math.imul(h^(h>>>13),3266489909); return (h^=h>>>16)>>>0; }; }
 function mulberry32(a){ return ()=>{ a|=0; a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
@@ -1412,22 +1470,31 @@ function pintarSala(){
 }
 function loadSB(){ return window.supabase?Promise.resolve():new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
 function entrarProyector(){ if(sCode.length!==4){ salaInvalido(0); return; } entrarSala(true); }
+function limpiarTimersSala(){
+  if(!SALA) return;
+  Object.values(SALA.timeouts||{}).forEach(clearTimeout);
+  clearInterval(SALA.pollInt); clearInterval(SALA.hbInt);
+  clearTimeout(SALA.hostTimer); clearTimeout(SALA.sigTimer); clearTimeout(SALA.mkT);
+}
 function reintentar(){
   $('btnRetryL').style.display='none'; $('btnRetryE').style.display='none';
   const spec=!!(SALA&&SALA.spec);
-  if(SALA){ Object.values(SALA.timeouts||{}).forEach(clearTimeout); clearInterval(SALA.pollInt); if(SALA.ch&&sbClient) sbClient.removeChannel(SALA.ch); }
+  if(SALA){ limpiarTimersSala(); if(SALA.ch&&sbClient) sbClient.removeChannel(SALA.ch); }
   SALA=null;
-  entrarSala(spec);
+  const sv=salaSaved();
+  if(sv&&sv.code){ const sn=leerSnap(); if(sn){ sv.S=sn.S; sv.ronda=sn.ronda; } entrarSala(spec, sv); }
+  else entrarSala(spec);
 }
 function cerrarAno(){
   if(!SALA) return;
   Object.values(SALA.prog).forEach(p=>{ if(!p.fin) p.caido=true; });
-  pintarEspectador(); pintarPodio();
+  pintarEspectador(); pintarPodio(); hostChequearCierre();
 }
-function entrarSala(spec){
-  const code=sCode.join(''), ini=spec?'PROYECTOR':sIni.join('').trim();
+/* revive: {code,id,ini,spec,ronda[,S]} guardado en sessionStorage — reentra como el mismo equipo tras un F5 */
+function entrarSala(spec, revive){
+  const code=revive?revive.code:sCode.join(''), ini=spec?'PROYECTOR':(revive?revive.ini:sIni.join('').trim());
   $('btnRetryL').style.display='none'; $('btnRetryE').style.display='none';
-  if(spec){ $('espCode').textContent=code; $('espEstado').textContent='CONECTANDO…'; $('espCols').innerHTML=''; $('espArrancar').style.display='none'; $('espCerrar').style.display='none'; $('espMalas').style.display='none'; show('espectador'); }
+  if(spec){ $('espCode').textContent=code; $('espEstado').textContent='CONECTANDO…'; $('espCols').innerHTML=''; $('espArrancar').style.display='none'; $('espSaltar').style.display='none'; $('espCerrar').style.display='none'; $('espMalas').style.display='none'; show('espectador'); }
   else {
     $('lobbyCode').textContent=code;
     $('lobbyEstado').textContent='CONECTANDO…';
@@ -1436,9 +1503,14 @@ function entrarSala(spec){
   }
   loadSB().then(()=>{
     if(!sbClient) sbClient=window.supabase.createClient(SB_URL,SB_KEY);
-    const id=Math.random().toString(36).slice(2,9);
-    SALA={code, ini, id, ronda:0, players:{}, prog:{}, playing:false, festejado:false, spec:!!spec, timeouts:{}, lastProg:Date.now()};
-    const ch=sbClient.channel('bcu12m:'+code,{config:{broadcast:{self:true},presence:{key:id}}});
+    const id=revive?revive.id:Math.random().toString(36).slice(2,9);
+    /* fase = estado LOCAL de esta máquina (ronda/esperando/marcador); rFase = ciclo de vida de la RONDA,
+       que gobierna al host — separados porque un host que también juega pisa fase al responder */
+    SALA={code, ini, id, ronda:revive?(revive.ronda||0):0, players:{}, prog:{}, playing:false, festejado:false, spec:!!spec, timeouts:{}, lastProg:Date.now(),
+          fase:'lobby', rFase:'lobby', rn:-1, rondaT0:0, rondaDur:RONDA_DUR, esHost:false, prevTabla:null, pendRonda:null, fbT0:0,
+          pollInt:null, hbInt:null, hostTimer:null, sigTimer:null, mkT:null};
+    salaSaveId();
+    const ch=sbClient.channel('bcu12m2:'+code,{config:{broadcast:{self:true},presence:{key:id}}});
     SALA.ch=ch;
     if(spec) SALA.pollInt=setInterval(()=>pintarEspectador(),15000);
     ch.on('presence',{event:'sync'},()=>{ if(!SALA||SALA.ch!==ch) return;
@@ -1447,31 +1519,200 @@ function entrarSala(spec){
       /* equipo desconectado a mitad de partida: a los 20s se marca caído (si no volvió) */
       Object.keys(SALA.prog).forEach(k=>{
         if(!SALA.prog[k].fin && !SALA.players[k] && !SALA.timeouts[k]){
-          SALA.timeouts[k]=setTimeout(()=>{ if(SALA&&SALA.prog[k]&&!SALA.players[k]){ SALA.prog[k].caido=true; pintarLive(); pintarPodio(); pintarEspectador(); } },20000);
+          SALA.timeouts[k]=setTimeout(()=>{ if(SALA&&SALA.prog[k]&&!SALA.players[k]){ SALA.prog[k].caido=true; pintarLive(); pintarPodio(); pintarEspectador(); hostChequearCierre(); } },20000);
         }
         if(SALA.players[k]&&SALA.timeouts[k]){ clearTimeout(SALA.timeouts[k]); delete SALA.timeouts[k]; delete SALA.prog[k].caido; }
       });
+      chequearHost();
       pintarLobby(); pintarPodio(); pintarEspectador(); });
     ch.on('broadcast',{event:'start'},({payload})=>{ if(!SALA||SALA.ch!==ch) return;
       if(payload.ronda<=SALA.ronda) return; /* doble tap / eco: una sola cuenta regresiva */
       SALA.ronda=payload.ronda; SALA.festejado=false; SALA.prog={};
+      SALA.rn=-1; SALA.fase='cuenta'; SALA.rFase='cuenta'; SALA.prevTabla=null; SALA.pendRonda=null;
+      clearTimeout(SALA.hostTimer); clearTimeout(SALA.sigTimer); clearTimeout(SALA.mkT); cerrarMk();
       Object.values(SALA.timeouts).forEach(clearTimeout); SALA.timeouts={}; SALA.lastProg=Date.now();
+      salaSaveId();
       arrancarCuenta(); });
+    ch.on('broadcast',{event:'ronda'},({payload})=>{ if(!SALA||SALA.ch!==ch) return; recibirRonda(payload); });
+    ch.on('broadcast',{event:'marcador'},({payload})=>{ if(!SALA||SALA.ch!==ch) return; recibirMarcador(payload); });
     ch.on('broadcast',{event:'prog'},({payload})=>{ if(!SALA||SALA.ch!==ch) return;
       SALA.lastProg=Date.now();
       if(!(SALA.prog[payload.id]&&SALA.prog[payload.id].fin)) SALA.prog[payload.id]=payload;
       if(!SALA.playing && !SALA.spec && $('lobby').classList.contains('on')){ $('lobbyEstado').textContent='PARTIDA EN CURSO · CUANDO TERMINE ENTRAN EN LA REVANCHA'; $('btnArrancar').style.display='none'; }
-      pintarLive(); pintarPodio(); pintarEspectador(); });
+      pintarLive(); pintarPodio(); pintarEspectador(); pintarEspera(); hostChequearCierre(); });
     ch.on('broadcast',{event:'fin'},({payload})=>{ if(!SALA||SALA.ch!==ch) return; SALA.lastProg=Date.now(); SALA.prog[payload.id]=payload; pintarLive(); pintarPodio(); pintarEspectador(); });
     ch.subscribe(st=>{ if(!SALA||SALA.ch!==ch) return;
       if(st==='SUBSCRIBED'){
         ch.track({ini, spec:!!spec});
-        if(SALA.spec){ $('espEstado').textContent='ESPERANDO EQUIPOS…'; pintarEspectador(); }
+        if(revive&&revive.S&&!spec){ reanudarSala(revive); }
+        else if(SALA.spec){ $('espEstado').textContent='ESPERANDO EQUIPOS…'; pintarEspectador(); }
         else { $('lobbyEstado').textContent='SALA ABIERTA · ESPERANDO A LAS OTRAS MÁQUINAS'; $('btnArrancar').style.display=''; }
       }
       else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'){ $(SALA.spec?'espEstado':'lobbyEstado').textContent='SIN CONEXIÓN · REVISÁ EL INTERNET'; $(SALA.spec?'btnRetryE':'btnRetryL').style.display=''; }
     });
   }).catch(()=>{ $(spec?'espEstado':'lobbyEstado').textContent='EL MODO SALA NECESITA INTERNET'; $(spec?'btnRetryE':'btnRetryL').style.display=''; });
+}
+/* F5 a mitad de partida: reconstruir la partida desde la semilla y el snapshot, y esperar la ronda vigente */
+function reanudarSala(rev){
+  DUELO=false; TRIVIA=false; $('hud').style.display=''; document.body.classList.remove('j0','j1');
+  armarPartida(mulberry32(xmur3(SALA.code+'#'+SALA.ronda)()));
+  S=rev.S; SALA.playing=true; SALA.fase='esperando'; SALA.rFase='ronda'; SALA.rn=S.i;
+  $('salaLive').style.display='flex';
+  show('juego');
+  $('evento').innerHTML='<div class="mesChip dsp pop">SALA '+SALA.code+'</div><h2 class="dsp">Reconectando con el año…</h2>';
+  hud();
+  /* si el F5 fue con la última parada ya respondida, el año está jugado: cerrar acá (el marcador final pudo pasar) */
+  if(S.respondida&&S.i>=TOTAL_MESES-1){ armarHeartbeat(); finalizar(); return; }
+  salaProg(S.respondida?S.i+1:S.i); armarHeartbeat();
+  /* sin responder: re-abrir la parada en curso y que decidan en lo que queda de ronda */
+  if(!S.respondida){
+    SALA.rn=S.i; SALA.fase='ronda'; SALA.rondaT0=Date.now();
+    if(ordenEventos[S.i]==='BOCHA'){ S.bochaOk=false; mostrarBocha(); } else render();
+  }
+}
+
+/* ===== HOST: abre y cierra las rondas (proyector; sin proyector, la máquina de menor id) ===== */
+function calcHostId(){
+  if(!SALA||!SALA.ch) return null;
+  const st=SALA.ch.presenceState(), specs=[], js=[];
+  Object.keys(st).sort().forEach(k=>{ if(st[k][0]&&st[k][0].spec) specs.push(k); else js.push(k); });
+  return specs[0]||js[0]||null;
+}
+function chequearHost(){
+  if(!SALA) return;
+  const era=SALA.esHost;
+  SALA.esHost=(calcHostId()===SALA.id);
+  if(!SALA.esHost&&era){ clearTimeout(SALA.hostTimer); clearTimeout(SALA.sigTimer); }
+  if(SALA.esHost&&!era&&SALA.rn>=0){
+    /* relevo en caliente: si no sabemos cuándo abrió la ronda, asumimos que fue recién (se estira una vez, no se rompe) */
+    if(SALA.rFase==='marcador'){ clearTimeout(SALA.sigTimer); SALA.sigTimer=setTimeout(()=>abrirRonda(SALA.rn+1),2000); }
+    else { if(!SALA.rondaT0) SALA.rondaT0=Date.now(); hostProgramarCierre(); }
+  }
+}
+function rosterIds(){ return SALA?Object.keys(SALA.prog).filter(k=>!SALA.prog[k].caido):[]; }
+function abrirRonda(n){
+  if(!SALA||!SALA.esHost||!SALA.ch||n>=TOTAL_MESES) return;
+  SALA.adoptT0=0; /* ronda propia: el host ya tiene autoridad plena */
+  SALA.rn=n; SALA.rFase='ronda'; SALA.rondaT0=Date.now();
+  SALA.rondaDur=(n===BOCHA_IDX)?BOCHA_DUR:RONDA_DUR;
+  SALA.ch.send({type:'broadcast',event:'ronda',payload:{n, dur:SALA.rondaDur, tipo:n===BOCHA_IDX?'bocha':'decision'}});
+  hostProgramarCierre();
+}
+function hostProgramarCierre(){
+  clearTimeout(SALA.hostTimer);
+  const resta=Math.max(500, SALA.rondaDur*1000-(Date.now()-SALA.rondaT0)+800); /* +800ms de gracia por latencia */
+  SALA.hostTimer=setTimeout(cerrarRonda, resta);
+}
+function hostChequearCierre(){
+  if(!SALA||!SALA.esHost) return;
+  /* host relevado sin contexto (p.ej. proyector recargado): adoptar la ronda en curso desde los heartbeats
+     (el prog trae rn explícito; mes-1 es el fallback y puede quedar una atrás si nadie respondió aún) */
+  if(SALA.rn<0&&!SALA.playing&&SALA.rFase!=='cuenta'){
+    const rr=Object.values(SALA.prog).reduce((a,p)=>Math.max(a, p.rn!==undefined?p.rn:(p.mes||0)-1), -1);
+    if(rr>=0&&!Object.values(SALA.prog).every(p=>p.fin)){ SALA.rn=rr; SALA.rFase='ronda'; SALA.rondaT0=Date.now(); SALA.rondaDur=RONDA_DUR; SALA.adoptT0=Date.now(); hostProgramarCierre(); }
+  }
+  if(SALA.rFase!=='ronda') return;
+  /* host adoptado: 7s de gracia antes de poder cerrar por completitud — que los heartbeats (cada 5s)
+     traigan el roster entero; si no, cerraría la ronda conociendo a un solo equipo. El reloj sigue de tope. */
+  if(SALA.adoptT0&&Date.now()-SALA.adoptT0<7000) return;
+  const r=rosterIds();
+  if(r.length&&r.every(k=>(SALA.prog[k].mes||0)>=SALA.rn+1||SALA.prog[k].fin)) cerrarRonda();
+}
+function cerrarRonda(){
+  if(!SALA||!SALA.esHost||SALA.rFase!=='ronda') return;
+  clearTimeout(SALA.hostTimer);
+  const final=SALA.rn>=TOTAL_MESES-1;
+  if(SALA.rn===BOCHA_IDX&&!final){ SALA.rFase='entre'; SALA.sigTimer=setTimeout(()=>abrirRonda(SALA.rn+1),700); return; } /* la bocha pega igual en todos: sin marcador */
+  SALA.rFase='marcador';
+  SALA.ch.send({type:'broadcast',event:'marcador',payload:{n:SALA.rn, final, tabla:armarTabla()}});
+  if(!final) SALA.sigTimer=setTimeout(()=>abrirRonda(SALA.rn+1), MARCADOR_MS);
+}
+function armarTabla(){
+  const rows=rosterIds().map(k=>({id:k, ini:SALA.prog[k].ini, score:SALA.prog[k].score||0}));
+  rows.sort((a,b)=>b.score-a.score);
+  const prev={}; (SALA.prevTabla||[]).forEach(r=>{ prev[r.id]=r.pos; });
+  rows.forEach((r,i)=>{ r.pos=i+1; r.dPos=prev[r.id]?prev[r.id]-r.pos:0; });
+  SALA.prevTabla=rows;
+  return rows;
+}
+function saltarRonda(){ cerrarRonda(); }
+
+/* ===== MÁQUINAS: reaccionar a ronda/marcador del host ===== */
+function recibirRonda(p){
+  if(!SALA) return;
+  SALA.rondaT0=Date.now(); SALA.rondaDur=p.dur||RONDA_DUR; SALA.rFase='ronda';
+  if(SALA.spec){ SALA.rn=p.n; SALA.fase='ronda'; pintarEspectador(); return; }
+  if(!SALA.playing){ SALA.pendRonda=p; return; } /* llegó durante la cuenta regresiva: se aplica al salir */
+  /* guard contra S.i (la verdad LOCAL): si fuera contra SALA.rn, un host-jugador se filtraría su propio eco
+     (abrirRonda pre-setea rn) y no avanzaría nunca */
+  if(p.n<S.i||(p.n===S.i&&(SALA.fase==='ronda'||S.respondida))) return; /* eco, duplicado, o re-apertura de una parada ya respondida */
+  cerrarMk();
+  /* catch-up (F5 o rondas vencidas): lo no decidido va sin puntos; la bocha sí pega — es igual para todos */
+  let perdidas=0;
+  while(S.i<p.n){
+    if(ordenEventos[S.i]==='BOCHA'){ if(!S.bochaOk&&bochaFix) S.plata+=bochaFix.fx.plata; }
+    else if(!S.respondida) perdidas++;
+    S.i++; S.respondida=false; S.bochaOk=false;
+  }
+  if(perdidas>0) S.racha=0;
+  SALA.rn=p.n; SALA.fase='ronda'; S.respondida=false;
+  $('feedback').classList.remove('on'); $('feedback').style.display='none';
+  salaProg(S.i); /* "estoy en la parada n, sin decidir": mantiene el roster del host al día */
+  if(ordenEventos[S.i]==='BOCHA'){ S.bochaOk=false; mostrarBocha(); }
+  else { show('juego'); slideRender(); }
+  salaSnap();
+}
+function recibirMarcador(p){
+  if(!SALA) return;
+  SALA.rFase='marcador';
+  /* si soy host, encadeno la siguiente ronda AUNQUE este cierre lo haya mandado otro
+     (un host en retirada puede cerrar y ceder el mando antes de abrir la que sigue) */
+  if(SALA.esHost&&!p.final){
+    SALA.rn=Math.max(SALA.rn,p.n); SALA.adoptT0=0;
+    clearTimeout(SALA.hostTimer); clearTimeout(SALA.sigTimer);
+    SALA.sigTimer=setTimeout(()=>abrirRonda(p.n+1), MARCADOR_MS);
+  }
+  if(SALA.spec){ SALA.fase='marcador'; pintarEspectador(); return; }
+  if(!SALA.playing||p.n<SALA.rn) return;
+  SALA.fase='marcador';
+  const laPerdio=!S.respondida;
+  if(laPerdio){ S.racha=0; clearInterval(salaTimerInt); document.querySelectorAll('.op').forEach(x=>{ x.style.pointerEvents='none'; x.style.opacity='.25'; }); salaSnap(); }
+  /* lectura mínima del feedback garantizada: el marcador espera a que la lección se haya podido leer */
+  const espera=laPerdio?0:Math.max(0, FB_MIN_MS-(Date.now()-(SALA.fbT0||0)));
+  clearTimeout(SALA.mkT);
+  SALA.mkT=setTimeout(()=>{
+    if(!SALA) return;
+    $('feedback').classList.remove('on'); $('feedback').style.display='none';
+    if(p.final){ cerrarMk(); finalizar(); return; }
+    mostrarMk(p, laPerdio);
+  }, espera);
+}
+function mostrarMk(p, laPerdio){
+  const mi=p.tabla.find(r=>r.id===SALA.id);
+  $('mkKick').textContent='MARCADOR · PARADA '+(p.n+1)+' DE '+TOTAL_MESES;
+  $('mkRows').innerHTML=p.tabla.map((r,i)=>{
+    const d=r.dPos>0?`<span class="mkD up">▲${r.dPos}</span>`:(r.dPos<0?`<span class="mkD dn">▼${-r.dPos}</span>`:'<span class="mkD">—</span>');
+    return `<div class="mkRow${r.id===SALA.id?' yo':''}" style="animation-delay:${i*120}ms"><span class="mkPos dsp">${r.pos}º</span><span class="mkNom dsp">${r.ini}</span>${d}<span class="mkSc mono">${(r.score||0).toLocaleString('es-UY')}</span></div>`;
+  }).join('');
+  $('mkNota').textContent = laPerdio?'SE LES FUE LA RONDA · SIN PUNTOS Y SE CORTÓ LA RACHA'
+    : mi&&mi.pos===1?'VAN PRIMEROS · QUE DURE'
+    : mi?('VAN '+mi.pos+'º · A '+(p.tabla[0].score-mi.score).toLocaleString('es-UY')+' DEL 1º'):'';
+  $('mkOv').classList.add('on');
+  if(laPerdio) sfxNo(); else sfxWhoosh();
+  p.tabla.forEach((r,i)=>setTimeout(sfxTick,150+i*120));
+}
+function cerrarMk(){ if(SALA) clearTimeout(SALA.mkT); $('mkOv').classList.remove('on'); }
+function pintarEspera(){
+  if(!SALA||!SALA.playing||SALA.spec) return;
+  const fe=$('fbEspera'); if(!fe||fe.style.display==='none') return;
+  const r=rosterIds(), ya=r.filter(k=>(SALA.prog[k].mes||0)>=SALA.rn+1).length;
+  fe.textContent = (r.length&&ya>=r.length)?'TODOS DECIDIERON · AHÍ VIENE EL MARCADOR…':'ESPERANDO AL RESTO · '+ya+' DE '+(r.length||1)+' YA DECIDIERON';
+}
+function armarHeartbeat(){
+  clearInterval(SALA.hbInt);
+  /* reafirmar el estado cada 5s TAMBIÉN mientras se decide: cura mensajes perdidos y le da el roster
+     completo a un host recién relevado (si no, podría cerrar la ronda sin conocer a todos los equipos) */
+  SALA.hbInt=setInterval(()=>{ if(SALA&&SALA.playing&&S) salaProg(S.respondida?S.i+1:S.i); },5000);
 }
 function salirSala(b){
   /* dos toques para salir: en el proyector un toque accidental mata la vista del taller */
@@ -1482,8 +1723,8 @@ function salirSala(b){
     sfxTap(); return;
   }
   if(b){ delete b.dataset.arm; b.style.background=''; b.style.color=''; }
-  if(SALA){ Object.values(SALA.timeouts||{}).forEach(clearTimeout); clearInterval(SALA.pollInt); if(SALA.ch&&sbClient) sbClient.removeChannel(SALA.ch); }
-  SALA=null; clearInterval(salaTimerInt); $('salaLive').style.display='none'; show('home');
+  if(SALA){ limpiarTimersSala(); if(SALA.ch&&sbClient) sbClient.removeChannel(SALA.ch); }
+  SALA=null; clearInterval(salaTimerInt); cerrarMk(); salaWipe(); $('salaLive').style.display='none'; show('home');
 }
 let lobbyPrev=0;
 function pintarLobby(){
@@ -1518,6 +1759,7 @@ function arrancarCuenta(){
       setTimeout(()=>{ ov.classList.remove('on'); g.style.color='';
         if(!SALA) return;
         if(SALA.spec){ show('espectador'); pintarEspectador(); } else empezarSala();
+        chequearHost(); if(SALA.esHost) abrirRonda(0); /* el host abre enero; el resto espera el evento */
       },600);
     }
   },1000);
@@ -1525,9 +1767,12 @@ function arrancarCuenta(){
 function empezarSala(){
   DUELO=false; TRIVIA=false; $('hud').style.display=''; document.body.classList.remove('j0','j1');
   armarPartida(mulberry32(xmur3(SALA.code+'#'+SALA.ronda)()));
-  S=nuevoEstado(); SALA.playing=true;
+  S=nuevoEstado(); S.respondida=false; SALA.playing=true; SALA.rn=-1;
   $('salaLive').style.display='flex';
-  show('juego'); render(); salaProg(0);
+  show('juego');
+  $('evento').innerHTML='<div class="mesChip dsp pop">SALA '+SALA.code+'</div><h2 class="dsp">Ahí viene enero…</h2>';
+  hud(); salaProg(0); armarHeartbeat(); salaSnap();
+  if(SALA.pendRonda){ const p=SALA.pendRonda; SALA.pendRonda=null; recibirRonda(p); } /* la ronda 0 llegó durante la cuenta */
 }
 /* mismo desglose que el score final, sin medallas (se otorgan al cierre) */
 function scoreParcial(s){
@@ -1535,27 +1780,27 @@ function scoreParcial(s){
   return Math.max(0,s.plata+s.fondo)+Math.round(s.fondo*0.5)-Math.round(Math.max(0,s.int)*1.5)-mReal*8000-mCons*3000+s.bonusRacha;
 }
 /* n = meses ya completados (0 a 12) */
-function salaProg(n){ if(!SALA||!SALA.playing||!SALA.ch) return; SALA.ch.send({type:'broadcast',event:'prog',payload:{id:SALA.id, ini:SALA.ini, mes:Math.min(n,TOTAL_MESES), score:scoreParcial(S), marcas:S.marcas.length}}); }
+function salaProg(n){ if(!SALA||!SALA.playing||!SALA.ch) return; SALA.ch.send({type:'broadcast',event:'prog',payload:{id:SALA.id, ini:SALA.ini, mes:Math.min(n,TOTAL_MESES), rn:S.i, resp:!!S.respondida, score:scoreParcial(S), marcas:S.marcas.length}}); }
 let salaTimerInt=null;
+/* cosmético: cuenta contra el rondaT0 que mandó el host; el cierre real lo decide el reloj del host */
 function armarTimer(){
   clearInterval(salaTimerInt);
   const el=$('salaTimer'); if(!el) return;
-  let t=45; el.textContent='0:45'; el.classList.remove('rojo','tit','urgente');
-  salaTimerInt=setInterval(()=>{ t--;
+  el.classList.remove('rojo','tit','urgente');
+  const pinta=()=>{
     const e=$('salaTimer'); if(!e){ clearInterval(salaTimerInt); return; }
+    const t=Math.max(0, Math.round(SALA.rondaDur-(Date.now()-SALA.rondaT0)/1000));
     if(t>0){
       e.textContent='0:'+String(t).padStart(2,'0');
       if(t<=10){ e.classList.add('rojo','urgente'); sfxReloj(); }
       if(t<=5){ tone(1200+(5-t)*60,0.03,'square',0.08,0.5); }
-    } else if(t===0){
-      e.textContent='¡DECIDAN!'; e.classList.add('rojo','tit'); thump();
-      if(!$('feedback').classList.contains('on')){ document.body.classList.add('shake'); setTimeout(()=>document.body.classList.remove('shake'),450); }
-    } else if(t%10===0){
-      /* vencido: presión social sin forzar la elección */
-      e.textContent = e.textContent==='¡DECIDAN!' ? 'EL RESTO ESPERA…' : '¡DECIDAN!';
-      sfxReloj(); tone(1200,0.03,'square',0.08,0.15);
+    } else {
+      e.textContent='¡SE CIERRA!';
+      if(!e.dataset.cero){ e.dataset.cero='1'; e.classList.add('rojo','tit'); thump();
+        if(!$('feedback').classList.contains('on')){ document.body.classList.add('shake'); setTimeout(()=>document.body.classList.remove('shake'),450); } }
     }
-  },1000);
+  };
+  pinta(); salaTimerInt=setInterval(pinta,1000);
 }
 function pintarEspectador(){
   if(!SALA||!SALA.spec||!$('espectador').classList.contains('on')) return;
@@ -1569,7 +1814,8 @@ function pintarEspectador(){
   const vivos=jug.filter(r=>!r.caido);
   const todos=jug.some(r=>r.fin)&&vivos.length>0&&vivos.every(r=>r.fin);
   const enJuego=jug.length>0&&!todos;
-  $('espEstado').textContent = rows.length===0?'ESPERANDO EQUIPOS…' : todos?'¡AÑO TERMINADO!' : enJuego?'EN VIVO':'EQUIPOS LISTOS';
+  $('espEstado').textContent = rows.length===0?'ESPERANDO EQUIPOS…' : todos?'¡AÑO TERMINADO!'
+    : enJuego?(SALA.rFase==='ronda'&&SALA.rn>=0?'PARADA '+(SALA.rn+1)+' DE '+TOTAL_MESES+' · EN VIVO':(SALA.rFase==='marcador'?'MARCADOR':'EN VIVO')):'EQUIPOS LISTOS';
   const cols=['var(--azul)','var(--rosa)','var(--verde)','var(--rojo)'];
   $('espCols').innerHTML=rows.map((r,i)=>{
     const dots=Array.from({length:5},(_,d)=>`<div class="hd${d<(r.marcas||0)?' m':''}"></div>`).join('');
@@ -1596,6 +1842,7 @@ function pintarEspectador(){
       + '<div class="mRow"><div class="mLec"><b>Para la ronda:</b> ¿a alguien le pasó esto en la vida real? ¿Qué cambiarían en enero?</div></div>';
   } else ml.style.display='none';
   $('espCerrar').style.display = (enJuego && (jug.some(r=>r.caido) || Date.now()-SALA.lastProg>120000)) ? '' : 'none';
+  $('espSaltar').style.display = (SALA.esHost&&SALA.rFase==='ronda'&&enJuego)?'':'none';
   $('espArrancar').style.display = (rows.length>0&&!enJuego)?'':'none';
   $('espArrancar').innerHTML=(todos?'Revancha · eventos nuevos ':'¡Arrancar! ')+'<svg class="ic"><use href="#i-flecha"/></svg>';
   if(todos&&!SALA.festejado){ SALA.festejado=true; revelarGanador(); }
@@ -1738,6 +1985,14 @@ function sigoAca(){ $('idle').classList.remove('on'); clearInterval(idleCount); 
 
 /* init */
 attractOn();
+/* F5 en pleno taller: si esta pestaña estaba en una sala v2, volver solo (mismo id → sin "SE DESCONECTÓ") */
+(function(){
+  const sv=salaSaved();
+  if(!sv||!sv.code) return;
+  const sn=leerSnap();
+  if(sn&&sn.S){ sv.S=sn.S; sv.ronda=sn.ronda; }
+  entrarSala(sv.spec, sv);
+})();
 </script>
 </body>
 </html>
