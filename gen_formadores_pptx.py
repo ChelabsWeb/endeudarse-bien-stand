@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """Genera 'Formación de formadores — Endeudarse bien (edición juego 2026)'.
 
-Uso:  python3 gen_formadores_pptx.py
-Requiere: python-pptx. Opcional: /tmp/qr_juego.png y /tmp/qr_consulta.png
-(se generan con `npx qrcode` o cualquier generador; si faltan, la slide
-del ticket de salida sale sin imágenes).
+Misma estructura y estética que el mazo original del programa Pin!
+("Formación de formadores - Endeudarse bien.pptx", 68 slides), adaptado:
+el bloque central del taller ahora es el juego "12 Meses" en equipos.
 
-Fuentes de contenido: Manual de tallerista Pin! 2025 (Taller 3, págs. 56-94)
-+ el juego "12 Meses" (https://chelabsweb.github.io/endeudarse-bien-stand/).
-Estética: risografía uruguaya del juego (papel/tinta/amarillo/rosa/azul).
+Uso:  python3 gen_formadores_pptx.py
+Requiere: python-pptx. Opcional: /tmp/qr_juego.png y /tmp/qr_consulta.png.
+Fuentes: Manual de tallerista Pin! 2025 (Taller 3) + el juego
+https://chelabsweb.github.io/endeudarse-bien-stand/
 """
 import os
 from pptx import Presentation
@@ -17,41 +17,36 @@ from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
 
-PAPEL  = RGBColor(0xF3, 0xEE, 0xE2)
-PAPEL2 = RGBColor(0xFB, 0xF8, 0xF0)
-TINTA  = RGBColor(0x1B, 0x1F, 0x3A)
-AMAR   = RGBColor(0xFF, 0xD5, 0x00)
-ROSA   = RGBColor(0xFF, 0x48, 0xB0)
-AZUL   = RGBColor(0x00, 0x78, 0xBF)
-VERDE  = RGBColor(0x00, 0xA9, 0x5C)
-ROJO   = RGBColor(0xF1, 0x50, 0x60)
-MUTED  = RGBColor(0x6E, 0x66, 0x56)
+NAVY   = RGBColor(0x25, 0x2A, 0x52)
+VERDE  = RGBColor(0x3F, 0xB5, 0x77)
+CREMA  = RGBColor(0xFA, 0xF3, 0xDC)
+VIOLETA= RGBColor(0x6C, 0x63, 0xB5)
 BLANCO = RGBColor(0xFF, 0xFF, 0xFF)
+ROJO   = RGBColor(0xE8, 0x5A, 0x66)
+GRIS   = RGBColor(0x6B, 0x70, 0x93)
+CELESTE= RGBColor(0x2E, 0x74, 0xB5)
 
 DISP, BODY = 'Arial Black', 'Arial'
-
 prs = Presentation()
 prs.slide_width, prs.slide_height = Inches(13.333), Inches(7.5)
 BLANK = prs.slide_layouts[6]
 NPAG = [0]
 
 
-def slide(bg=PAPEL):
+def slide(bg=BLANCO):
     s = prs.slides.add_slide(BLANK)
     r = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, prs.slide_width, prs.slide_height)
-    r.fill.solid(); r.fill.fore_color.rgb = bg; r.line.fill.background()
-    r.shadow.inherit = False
+    r.fill.solid(); r.fill.fore_color.rgb = bg; r.line.fill.background(); r.shadow.inherit = False
     NPAG[0] += 1
     return s
 
 
-def box(s, x, y, w, h, fill=PAPEL2, line=TINTA, lw=2.5, off=0.08, shadow=True):
-    if shadow:
-        sh = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x + off), Inches(y + off), Inches(w), Inches(h))
-        sh.fill.solid(); sh.fill.fore_color.rgb = TINTA; sh.line.fill.background(); sh.shadow.inherit = False
-    b = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
+def rbox(s, x, y, w, h, fill, line=None, lw=1.5):
+    b = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
+    b.adjustments[0] = 0.08
     b.fill.solid(); b.fill.fore_color.rgb = fill
-    b.line.color.rgb = line; b.line.width = Pt(lw)
+    if line is None: b.line.fill.background()
+    else: b.line.color.rgb = line; b.line.width = Pt(lw)
     b.shadow.inherit = False
     return b
 
@@ -65,537 +60,556 @@ def text(s, x, y, w, h, items, anchor=MSO_ANCHOR.TOP):
         first = False
         p.alignment = it.get('al', PP_ALIGN.LEFT)
         p.space_after = Pt(it.get('sa', 4)); p.space_before = Pt(it.get('sb', 0))
-        segs = it['segs'] if 'segs' in it else [it]
-        for sg in segs:
+        for sg in it.get('segs', [it]):
             r = p.add_run(); r.text = sg['t']; f = r.font
             f.size = Pt(sg.get('s', it.get('s', 15)))
             f.bold = sg.get('b', it.get('b', False))
             f.name = sg.get('f', it.get('f', BODY))
-            f.color.rgb = sg.get('c', it.get('c', TINTA))
+            f.color.rgb = sg.get('c', it.get('c', NAVY))
     return tb
 
 
-def head(s, kick, title, tc=TINTA):
-    text(s, 0.55, 0.28, 12.3, 0.4, [{'t': kick, 's': 12.5, 'c': AZUL, 'b': True}])
-    text(s, 0.5, 0.56, 12.4, 1.0, [{'t': title, 's': 33, 'c': tc, 'f': DISP}])
+def dots(s, x, y, color=VERDE, n=5):
+    for i in range(n):
+        for j in range(2):
+            shp = 'MATH_PLUS' if i < 2 else 'OVAL'
+            d = s.shapes.add_shape(getattr(MSO_SHAPE, shp), Inches(x + j * 0.42), Inches(y + i * 0.42), Inches(0.16), Inches(0.16))
+            d.fill.solid(); d.fill.fore_color.rgb = color; d.line.fill.background(); d.shadow.inherit = False
 
 
-def footer(s, extra=''):
-    text(s, 0.55, 7.08, 12.3, 0.35, [{'t': f'PIN! · BCU · CENTRAL PARA VOS · TALLER 3 ENDEUDARSE BIEN{extra}   ·   {NPAG[0]:02d}',
-                                      's': 9, 'c': MUTED, 'b': True}])
+def pin(s, x, y, tc=CREMA):
+    text(s, x, y, 2.5, 0.7, [
+        {'t': 'Pin!', 's': 24, 'f': DISP, 'c': tc, 'sa': 0},
+        {'t': 'Piques para manejar tu dinero', 's': 9, 'b': True, 'c': tc},
+    ])
 
 
-def chip(s, x, y, w, txt, fill=AMAR, tc=TINTA, size=12, h=0.36):
-    c = box(s, x, y, w, h, fill=fill, lw=2, off=0.05)
-    tf = c.text_frame; tf.word_wrap = False
-    tf.margin_left = tf.margin_right = Inches(0.05)
-    tf.margin_top = tf.margin_bottom = Inches(0.01)
-    p = tf.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
-    r = p.add_run(); r.text = txt
-    r.font.size = Pt(size); r.font.bold = True; r.font.name = BODY; r.font.color.rgb = tc
-    return c
+def head(s, kick, title, tc=NAVY, kc=VERDE):
+    text(s, 0.6, 0.35, 12.2, 0.4, [{'t': kick, 's': 13, 'c': kc, 'b': True}])
+    text(s, 0.55, 0.68, 12.3, 1.0, [{'t': title, 's': 31, 'c': tc, 'f': DISP}])
 
 
-def barra(s, x, y, w_total, frac, label, val, color=AZUL):
-    text(s, x, y - 0.02, 3.15, 0.32, [{'t': label, 's': 12.5, 'b': True}])
-    box(s, x + 3.2, y, w_total, 0.3, fill=PAPEL2, lw=2, off=0.05, shadow=False)
+def footer(s, dark=False):
+    text(s, 0.6, 7.1, 12.2, 0.3, [{'t': f'PIN! · TALLER 3 · ENDEUDARSE BIEN — EDICIÓN JUEGO 2026 · {NPAG[0]:02d}',
+                                   's': 8.5, 'c': CREMA if dark else GRIS, 'b': True}])
+
+
+def portada_seccion(kick, tit, sub=''):
+    s = slide(NAVY)
+    dots(s, 11.6, 0.6, VERDE); dots(s, 0.8, 5.2, VIOLETA)
+    text(s, 1.0, 2.55, 11.3, 2.6, [
+        {'t': kick, 's': 20, 'f': DISP, 'c': VERDE, 'sa': 8},
+        {'t': tit, 's': 44, 'f': DISP, 'c': CREMA, 'sa': 8},
+    ] + ([{'t': sub, 's': 16, 'b': True, 'c': BLANCO}] if sub else []))
+    pin(s, 11.2, 6.3)
+    footer(s, dark=True)
+    return s
+
+
+AGENDA = ['Actividad rompehielos', 'El juego: 12 meses', 'Huella financiera', 'Decidir bien', 'Ticket de salida']
+
+def agenda(hl=-1):
+    s = slide(NAVY)
+    dots(s, 11.6, 0.6, VERDE)
+    text(s, 0.9, 0.75, 8, 1.0, [{'t': 'AGENDA', 's': 40, 'f': DISP, 'c': CREMA}])
+    y = 2.1
+    for i, item in enumerate(AGENDA):
+        act = (i == hl)
+        ln = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.95), Inches(y - 0.12), Inches(11.4), Pt(1.6))
+        ln.fill.solid(); ln.fill.fore_color.rgb = VIOLETA; ln.line.fill.background(); ln.shadow.inherit = False
+        if act:
+            rbox(s, 0.8, y - 0.02, 11.7, 0.78, VERDE)
+        text(s, 1.05, y + 0.06, 9.5, 0.6, [{'t': item, 's': 21, 'b': True, 'f': DISP if act else BODY,
+                                            'c': NAVY if act else CREMA}])
+        if act:
+            text(s, 10.4, y + 0.1, 2.0, 0.5, [{'t': 'AHORA', 's': 14, 'f': DISP, 'c': NAVY, 'al': PP_ALIGN.RIGHT}])
+        y += 0.95
+    if hl != len(AGENDA) - 1:
+        pin(s, 11.2, 6.3)
+    footer(s, dark=True)
+    return s
+
+
+def barra(s, x, y, w_total, frac, label, val, color=VERDE, lw_label=4.4):
+    text(s, x, y - 0.02, lw_label, 0.42, [{'t': label, 's': 12.5, 'b': True}])
+    rbox(s, x + lw_label + 0.1, y, w_total, 0.32, CREMA, line=NAVY, lw=1.2)
     if frac > 0:
-        f = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x + 3.2), Inches(y), Inches(max(w_total * frac, 0.12)), Inches(0.3))
-        f.fill.solid(); f.fill.fore_color.rgb = color; f.line.color.rgb = TINTA; f.line.width = Pt(2); f.shadow.inherit = False
-    text(s, x + 3.2 + w_total + 0.12, y - 0.03, 0.9, 0.32, [{'t': str(val), 's': 14, 'b': True, 'f': DISP, 'c': color}])
+        f = rbox(s, x + lw_label + 0.1, y, max(w_total * frac, 0.15), 0.32, color, line=NAVY, lw=1.2)
+    text(s, x + lw_label + 0.22 + w_total, y - 0.02, 0.9, 0.36, [{'t': str(val), 's': 15, 'b': True, 'f': DISP, 'c': color}])
 
 
-# ---------------------------------------------------------------- 1 PORTADA
-s = slide()
-chip(s, 0.55, 0.6, 4.9, 'PIN! · INJU · BCU · CAF  —  CENTRAL PARA VOS', fill=PAPEL2)
-text(s, 0.5, 1.35, 12.4, 2.6, [
-    {'t': 'ENDEUDARSE', 's': 76, 'f': DISP, 'c': TINTA, 'sa': 0},
-    {'t': 'BIEN', 's': 76, 'f': DISP, 'c': ROSA},
+QR1, QR2 = '/tmp/qr_juego.png', '/tmp/qr_consulta.png'
+
+# ============================================================ 1 PORTADA
+s = slide(NAVY)
+dots(s, 11.6, 0.5, VERDE); dots(s, 0.8, 5.4, VIOLETA)
+text(s, 0, 1.7, 13.333, 3.4, [
+    {'t': 'Endeudarse bien', 's': 58, 'f': DISP, 'c': CREMA, 'al': PP_ALIGN.CENTER, 'sa': 6},
+    {'t': 'decisiones financieras informadas', 's': 22, 'b': True, 'c': VERDE, 'al': PP_ALIGN.CENTER, 'sa': 10},
+    {'t': 'Taller 3 · Formación de formadores · edición juego 2026', 's': 15, 'b': True, 'c': BLANCO, 'al': PP_ALIGN.CENTER},
 ])
-text(s, 0.55, 4.05, 12, 0.6, [{'t': 'Taller 3 · Decisiones financieras informadas', 's': 22, 'b': True}])
-b = box(s, 0.55, 4.8, 7.6, 1.05, fill=AMAR)
-tf = b.text_frame; tf.word_wrap = True; tf.margin_left = Inches(0.18); tf.margin_top = Inches(0.12)
-p = tf.paragraphs[0]
-r = p.add_run(); r.text = 'FORMACIÓN DE FORMADORES · EDICIÓN JUEGO 2026'
-r.font.size = Pt(17); r.font.name = DISP; r.font.color.rgb = TINTA
-p2 = tf.add_paragraph()
-r = p2.add_run(); r.text = 'El taller ahora se juega: 3 máquinas en equipos + tablero en vivo'
-r.font.size = Pt(14); r.font.bold = True; r.font.name = BODY; r.font.color.rgb = TINTA
-for i, (cx, col) in enumerate([(0.55, AZUL), (2.15, ROSA), (3.75, VERDE)]):
-    chip(s, cx, 6.15, 1.45, f'EQUIPO {i+1}', fill=col, tc=BLANCO)
-chip(s, 5.35, 6.15, 2.3, 'PROYECTOR EN VIVO', fill=TINTA, tc=AMAR)
-footer(s)
+rbox(s, 3.87, 5.25, 5.6, 0.65, VERDE)
+text(s, 3.87, 5.35, 5.6, 0.5, [{'t': 'EL TALLER AHORA SE JUEGA', 's': 16, 'f': DISP, 'c': NAVY, 'al': PP_ALIGN.CENTER}])
+text(s, 0, 6.15, 13.333, 0.4, [{'t': 'Pin! · INJU · BCU · CAF — Central para Vos', 's': 12, 'b': True, 'c': CREMA, 'al': PP_ALIGN.CENTER}])
+footer(s, dark=True)
 
-# ------------------------------------------------------- 2 QUÉ CAMBIÓ
-s = slide(); head(s, 'LA EDICIÓN 2026', 'Qué cambió: el taller ahora se juega')
-b = box(s, 0.55, 1.75, 5.9, 4.5, fill=PAPEL2)
-text(s, 0.8, 1.95, 5.4, 4.1, [
-    {'t': 'ANTES', 's': 18, 'f': DISP, 'c': MUTED, 'sa': 10},
-    {'t': '• Slides con casos leídos en voz alta', 'sa': 8},
-    {'t': '• Preguntas orales y anotación en pizarra', 'sa': 8},
-    {'t': '• Kahoot como quiz aparte', 'sa': 8},
-    {'t': '• Los datos del BCU contados, no vividos', 'sa': 8},
-    {'t': '• Difícil con 20 participantes y pocas máquinas', 'sa': 8},
-])
-b = box(s, 6.85, 1.75, 5.9, 4.5, fill=AMAR)
-text(s, 7.1, 1.95, 5.4, 4.1, [
-    {'t': 'AHORA', 's': 18, 'f': DISP, 'c': TINTA, 'sa': 10},
-    {'t': '• El juego "12 Meses": un año en la piel de Joaquín, 10 decisiones', 'b': True, 'sa': 8},
-    {'t': '• 3 equipos juegan A LA VEZ, mismos eventos, ranking en vivo', 'b': True, 'sa': 8},
-    {'t': '• Los datos del BCU aparecen DENTRO del juego como quizzes', 'b': True, 'sa': 8},
-    {'t': '• El proyector es el tablero: toda la sala mira la carrera', 'b': True, 'sa': 8},
-    {'t': '• Cada participante se lleva el juego en su celular (QR)', 'b': True, 'sa': 8},
-])
-text(s, 0.55, 6.45, 12.3, 0.5, [{'segs': [
-    {'t': 'El juego, siempre listo en:  ', 's': 14, 'b': True, 'c': TINTA},
-    {'t': 'chelabsweb.github.io/endeudarse-bien-stand', 's': 16, 'b': True, 'c': AZUL},
-]}])
-footer(s)
+# ============================================================ 2 AGENDA
+agenda()
 
-# ------------------------------------------------------- 3 OBJETIVO (fiel al manual)
-s = slide(); head(s, 'PROPÓSITO DEL TALLER (MANUAL PIN! 2025)', 'Lo que el taller tiene que lograr')
-objs = [
-    ('REFLEXIÓN PRÁCTICA', 'Guiar una reflexión sobre el impacto del endeudamiento en la estabilidad financiera propia.', AZUL),
-    ('OPCIONES REALES', 'Identificar las opciones de financiamiento disponibles en Uruguay con casos verosímiles.', VERDE),
-    ('HUELLA FINANCIERA', 'Entender dónde queda registrada (BCU y Clearing de Informes) y cómo consultarla gratis.', ROSA),
-    ('MODELO PAMY', 'Evaluar un préstamo en 4 pasos: ¿Preciso? ¿Ahorro? ¿Mejores? ¿Y después?', AMAR),
-]
-for i, (t, d, col) in enumerate(objs):
-    x = 0.55 + (i % 2) * 6.3; y = 1.8 + (i // 2) * 2.15
-    b = box(s, x, y, 5.95, 1.85, fill=PAPEL2)
-    bar = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(0.22), Inches(1.85))
-    bar.fill.solid(); bar.fill.fore_color.rgb = col; bar.line.color.rgb = TINTA; bar.line.width = Pt(2); bar.shadow.inherit = False
-    text(s, x + 0.42, y + 0.18, 5.3, 1.5, [
-        {'t': t, 's': 16, 'f': DISP, 'sa': 6},
-        {'t': d, 's': 13.5},
-    ])
-text(s, 0.55, 6.35, 12.3, 0.55, [{'t': 'Idea fuerza oficial: un préstamo debe verse como un COMPROMISO DE AHORRO, no como una solución inmediata.', 's': 14.5, 'b': True, 'c': ROJO}])
-footer(s)
+# ============================================================ ROMPEHIELO
+agenda(0)
 
-# ------------------------------------------------------- 4 ESTRUCTURA 90'
-s = slide(); head(s, 'ESTRUCTURA · 90 MINUTOS', 'La agenda, con el juego en el centro')
-rows = [
-    ('5\'',  'Bienvenida y propósito', 'Endeudarse bien: decisiones informadas. Presentar equipos y máquinas.', TINTA),
-    ('15\'', 'Parte I · Desafío financiero', 'Rompehielo "100 uruguayos dicen": las 2 preguntas oficiales definen los equipos.', AZUL),
-    ('25\'', 'Parte II · La partida "12 Meses"', '3 equipos, mismos eventos, ranking en vivo en el proyector. PAMY y quizzes viven acá.', ROSA),
-    ('15\'', 'Parte III · La huella', 'Leer el podio: intereses, marcas. Los dos espejos (BCU/Clearing) y ¿le prestarían a Joaquín?', VERDE),
-    ('15\'', 'Parte IV · Decidir consciente', 'Interacción con la IA asesora en rol de Joaquín. Escala 1-7 antes y después.', AMAR),
-    ('10\'', 'Cierre + ticket de salida', 'Minuto de oro por equipo + QR "llevate el juego" y consultá tu huella. (+5\' transiciones)', TINTA),
-]
-y = 1.72
-for dur, tit, desc, col in rows:
-    b = box(s, 0.55, y, 12.2, 0.76, fill=PAPEL2, off=0.06)
-    c = box(s, 0.7, y + 0.14, 0.85, 0.48, fill=col, lw=2, off=0.04)
-    tf = c.text_frame; p = tf.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
-    r = p.add_run(); r.text = dur; r.font.size = Pt(15); r.font.name = DISP
-    r.font.color.rgb = BLANCO if col in (TINTA, AZUL, ROSA, VERDE) else TINTA
-    text(s, 1.75, y + 0.07, 3.6, 0.6, [{'t': tit, 's': 14.5, 'f': DISP}], anchor=MSO_ANCHOR.MIDDLE)
-    text(s, 5.5, y + 0.07, 7.1, 0.6, [{'t': desc, 's': 12}], anchor=MSO_ANCHOR.MIDDLE)
-    y += 0.86
-footer(s)
-
-# ------------------------------------------------------- 5 SETUP TÉCNICO
-s = slide(); head(s, 'ANTES DE QUE LLEGUE EL GRUPO', 'Setup técnico: 10 minutos y listo')
-b = box(s, 0.55, 1.7, 7.5, 4.9, fill=PAPEL2)
-text(s, 0.85, 1.92, 7.0, 4.5, [
-    {'t': 'CHECKLIST', 's': 15, 'f': DISP, 'c': AZUL, 'sa': 8},
-    {'t': '1 · 3 máquinas o tablets con el juego abierto (la URL de abajo). Con abrirlo una vez, queda cacheado.', 'sa': 7, 's': 13.5},
-    {'t': '2 · 1 computadora conectada al proyector, también con el juego.', 'sa': 7, 's': 13.5},
-    {'t': '3 · Wifi para las 4 máquinas: el modo Sala lo necesita.', 'sa': 7, 's': 13.5},
-    {'t': '4 · Elegí un código de sala de 4 letras (ej. MOTO) y anotalo grande en la pizarra.', 'sa': 7, 's': 13.5},
-    {'t': '5 · En cada máquina: SALA → código → nombre del equipo (hasta 12 letras).', 'sa': 7, 's': 13.5},
-    {'t': '6 · En el proyector: SALA → código → "PROYECTOR: SOLO MIRAR".', 'sa': 7, 's': 13.5},
-    {'t': '7 · Desde el proyector se arranca la partida y la revancha. Vos tenés el control.', 'b': True, 'sa': 7, 's': 13.5},
+s = slide(); head(s, 'DESAFÍO FINANCIERO', 'El desafío')
+text(s, 0.6, 1.75, 12.1, 1.5, [
+    {'t': 'Objetivo', 's': 15, 'b': True, 'c': CELESTE, 'sa': 3},
+    {'t': 'Fomentar la reflexión sobre decisiones financieras mediante un juego dinámico y participativo, con datos reales sobre cómo se endeudan las familias uruguayas y sus consecuencias.', 's': 14, 'sa': 8},
 ])
-b = box(s, 8.35, 1.7, 4.4, 3.0, fill=ROJO)
-text(s, 8.6, 1.9, 3.9, 2.6, [
-    {'t': 'PLAN B SIN WIFI', 's': 15, 'f': DISP, 'c': BLANCO, 'sa': 8},
-    {'t': 'El juego funciona 100% offline en modo normal: cada equipo juega en su máquina y comparan puntajes con el Ranking del día.', 'c': BLANCO, 's': 13, 'b': True},
+b = rbox(s, 0.6, 3.15, 5.9, 3.2, CREMA, line=VERDE, lw=2)
+text(s, 0.9, 3.35, 5.3, 2.8, [
+    {'t': 'Materiales', 's': 15, 'b': True, 'c': CELESTE, 'sa': 6},
+    {'t': '• Proyector con esta presentación (y luego el tablero del juego).', 's': 13, 'sa': 5},
+    {'t': '• Pizarra para anotar los puntos de cada equipo.', 's': 13, 'sa': 5},
+    {'t': '• Cronómetro o reloj visible.', 's': 13, 'sa': 5},
+    {'t': '• Las 3 máquinas del juego, ya conectadas a la sala.', 's': 13, 'b': True, 'sa': 5},
 ])
-b = box(s, 8.35, 5.0, 4.4, 1.6, fill=AMAR)
-text(s, 8.6, 5.18, 3.9, 1.3, [
-    {'t': 'TIP DE STAND', 's': 13, 'f': DISP, 'sa': 5},
-    {'t': '5 toques en el membrete de la portada abren las estadísticas del día.', 's': 12.5, 'b': True},
+b = rbox(s, 6.85, 3.15, 5.9, 3.2, NAVY)
+text(s, 7.15, 3.35, 5.3, 2.8, [
+    {'t': 'Duración', 's': 15, 'b': True, 'c': VERDE, 'sa': 6},
+    {'t': '15 minutos', 's': 26, 'f': DISP, 'c': CREMA, 'sa': 8},
+    {'t': 'Este rompehielo además arma los equipos que van a jugar "12 Meses".', 's': 13.5, 'b': True, 'c': BLANCO},
 ])
 footer(s)
 
-# ------------------------------------------------------- 6 EL JUEGO EN 30 SEGUNDOS
-s = slide(); head(s, 'PARA EL FACILITADOR', 'El juego "12 Meses" en 30 segundos')
-text(s, 0.55, 1.65, 12.2, 0.8, [{'segs': [
-    {'t': 'Sos Joaquín: sueldo justo, deudas viejas y ganas de una moto. ', 's': 16, 'b': True},
-    {'t': 'Un año en 10 decisiones (~3 minutos por partida).', 's': 16, 'b': True, 'c': AZUL},
-]}])
-hud = [
-    ('BILLETERA', 'La plata del mes. Sube y baja con cada decisión.', VERDE),
-    ('FONDO', 'El colchón de emergencia. Vale doble en el puntaje.', AZUL),
-    ('INTERESES REGALADOS', 'Todo lo pagado de más por financiar. Resta fuerte.', ROJO),
-    ('RACHA', '3+ decisiones buenas seguidas = bonus "cabeza fría".', ROSA),
-    ('HUELLA', '5 puntos. Cada marca (Clearing) queda 5 años y resta $8.000.', TINTA),
-]
-y = 2.55
-for t, d, col in hud:
-    chip(s, 0.55, y, 3.1, t, fill=col, tc=BLANCO if col != AMAR else TINTA, size=11.5)
-    text(s, 3.85, y - 0.04, 8.9, 0.45, [{'t': d, 's': 13}], anchor=MSO_ANCHOR.MIDDLE)
-    y += 0.55
-text(s, 0.55, 5.5, 12.2, 1.4, [
-    {'t': 'Al final: constancia de huella fotografiable, puntaje desglosado en recibo, 8 medallas rioplatenses y ranking del día.', 's': 14, 'b': True, 'sa': 6},
-    {'t': 'También existe el modo Duelo (2 jugadores pasa-la-tablet) para el stand.', 's': 12.5, 'c': MUTED},
+s = slide(); head(s, 'DESAFÍO FINANCIERO', 'Instrucciones')
+text(s, 0.6, 1.8, 12.1, 4.6, [
+    {'t': 'Se divide el grupo en 3 equipos (los mismos que después van a jugar, ~6-7 por equipo).', 's': 16, 'b': True, 'sa': 10},
+    {'t': 'Al estilo de "100 uruguayos dicen": si la respuesta coincide con una de la lista oficial, suman los puntos de esa respuesta. Los puntos reflejan cuántos uruguayos están en cada situación.', 's': 15, 'sa': 10},
+    {'t': 'Los equipos se alternan. Cada equipo tiene 30 segundos para discutir y solo su vocero/a da la respuesta final.', 's': 15, 'sa': 10},
+    {'t': 'Gana el equipo que suma más puntos… y se lleva la primera elección de máquina y nombre de equipo.', 's': 15, 'b': True, 'c': VERDE, 'sa': 10},
 ])
 footer(s)
 
-# ------------------------------------------------------- 7 MODO SALA PASO A PASO
-s = slide(); head(s, 'LA MECÁNICA DEL TALLER', 'Modo Sala: 3 máquinas, mismos eventos')
-pasos = [
-    ('1', 'CÓDIGO', 'Todas las máquinas ponen el MISMO código de 4 letras. Eso garantiza los mismos eventos para todos: la comparación es justa.'),
-    ('2', 'EQUIPOS', 'Cada máquina escribe su nombre de equipo (hasta 12 letras). Se ven entre sí en el lobby.'),
-    ('3', 'ARRANQUE', 'Desde el proyector: ¡Arrancar! Cuenta regresiva 3-2-1 en todas las pantallas a la vez.'),
-    ('4', 'LA PARTIDA', 'Cada equipo decide a su ritmo con timer de 45 segundos por decisión. Ranking en vivo arriba de cada pantalla.'),
-    ('5', 'EL PODIO', 'Al terminar: podio con corona, patrimonio, intereses regalados, categoría BCU y marcas de cada equipo.'),
-    ('6', 'REVANCHA', 'Desde el proyector. El sorteo cambia: eventos nuevos garantizados.'),
-]
-for i, (n, t, d) in enumerate(pasos):
-    x = 0.55 + (i % 3) * 4.18; y = 1.8 + (i // 3) * 2.4
-    b = box(s, x, y, 3.9, 2.1, fill=PAPEL2)
-    c = box(s, x + 0.18, y + 0.18, 0.55, 0.55, fill=AMAR, lw=2, off=0.05)
-    tf = c.text_frame; p = tf.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
-    r = p.add_run(); r.text = n; r.font.size = Pt(18); r.font.name = DISP; r.font.color.rgb = TINTA
-    text(s, x + 0.9, y + 0.22, 2.9, 0.5, [{'t': t, 's': 15, 'f': DISP}])
-    text(s, x + 0.2, y + 0.85, 3.5, 1.2, [{'t': d, 's': 11.8}])
-footer(s)
-
-# ------------------------------------------------------- 8 ROMPEHIELO
-s = slide(); head(s, 'PARTE I · ROMPEHIELO (15\')', 'Desafío financiero: ¿cuántos ya debemos?')
-b = box(s, 0.55, 1.75, 7.4, 2.5, fill=PAPEL2)
-text(s, 0.85, 1.95, 6.9, 2.2, [
-    {'t': 'LA PREGUNTA DE ARRANQUE', 's': 14, 'f': DISP, 'c': AZUL, 'sa': 8},
-    {'t': 'En Uruguay hay unos 600.000 jóvenes de 18 a 30 años. ¿Cuántos creen que ya pidieron un préstamo a un banco o financiera?', 's': 15, 'b': True, 'sa': 8},
-    {'t': 'Cada equipo grita su número. El que más se acerca elige nombre y máquina primero.', 's': 13, 'c': MUTED},
+s = slide(); head(s, 'DESAFÍO FINANCIERO', '¿Quién empieza?')
+b = rbox(s, 0.6, 1.9, 12.1, 3.0, CREMA, line=VERDE, lw=2)
+text(s, 1.0, 2.25, 11.3, 2.4, [
+    {'t': 'En Uruguay hay algo más de 600.000 jóvenes de entre 18 y 30 años.', 's': 19, 'b': True, 'sa': 8},
+    {'t': '¿Cuántos creen ustedes que han solicitado un préstamo a un banco o financiera?', 's': 22, 'f': DISP, 'c': CELESTE},
 ])
-b = box(s, 8.25, 1.75, 4.5, 2.5, fill=TINTA)
-text(s, 8.45, 2.0, 4.1, 2.1, [
-    {'t': '297.329', 's': 44, 'f': DISP, 'c': AMAR, 'al': PP_ALIGN.CENTER, 'sa': 4},
-    {'t': '1 DE CADA 2 JÓVENES', 's': 15, 'f': DISP, 'c': BLANCO, 'al': PP_ALIGN.CENTER, 'sa': 4},
-    {'t': 'registrados en la Central de Riesgos del BCU', 's': 11.5, 'c': BLANCO, 'al': PP_ALIGN.CENTER, 'b': True},
-])
-text(s, 0.55, 4.5, 12.2, 1.9, [
-    {'t': 'Cómo facilitarlo (manual Pin!):', 's': 14, 'b': True, 'c': AZUL, 'sa': 5},
-    {'t': '• "Si fuéramos como el promedio de Uruguay, un equipo entero estaría endeudado y otro no."', 's': 13, 'sa': 4},
-    {'t': '• Aclarar: estar registrado no significa no estar pagando. Preguntar: ¿les sorprende?', 's': 13, 'sa': 4},
-    {'t': '• Conectar: "Todo lo que vimos acá lo van a VIVIR ahora en el juego."', 's': 13, 'b': True},
+text(s, 0.6, 5.3, 12.1, 1.0, [
+    {'t': 'Cada equipo tiene 30 segundos para acordar un número. El que más se acerque, empieza.', 's': 15, 'b': True, 'c': GRIS},
 ])
 footer(s)
 
-# ------------------------------------------------------- 9 PREGUNTA 1 MOTIVOS
-s = slide(); head(s, 'PARTE I · PREGUNTA 1 (ESTILO "100 URUGUAYOS DICEN")', '¿Por qué se endeudan los hogares?')
-text(s, 0.55, 1.6, 12.2, 0.45, [{'t': 'Los equipos se alternan; 30 segundos por respuesta y responde solo el vocero. Puntos = cuántos uruguayos están en cada situación.', 's': 12.5, 'b': True, 'c': MUTED}])
-datos = [
-    ('Gastos corrientes (comida, ropa, hogar)', 25, ROJO),
-    ('Gastos mensuales (UTE, OSE, alquiler)', 18, AZUL),
-    ('Cancelar una deuda previa', 17, ROSA),
-    ('Bienes duraderos (auto, muebles)', 15, VERDE),
-    ('Arreglo de la vivienda', 12, TINTA),
-    ('Compra de vivienda', 5, MUTED),
-    ('Inversión en un negocio', 3, MUTED),
-    ('Vacaciones', 2, MUTED),
-]
-y = 2.25
+s = slide(NAVY); dots(s, 11.6, 0.6, VERDE)
+text(s, 0.9, 0.7, 11, 0.9, [{'t': 'Respuesta correcta', 's': 24, 'f': DISP, 'c': VERDE}])
+text(s, 0, 2.1, 13.333, 2.2, [
+    {'t': '297.329', 's': 100, 'f': DISP, 'c': CREMA, 'al': PP_ALIGN.CENTER, 'sa': 4},
+    {'t': '1 DE CADA 2 JÓVENES YA PASÓ POR VENTANILLA', 's': 20, 'f': DISP, 'c': VERDE, 'al': PP_ALIGN.CENTER},
+])
+text(s, 1.5, 5.3, 10.3, 1.3, [
+    {'t': 'Registrados en la Central de Riesgos del BCU. Ojo: estar registrado no significa no estar pagando.', 's': 14.5, 'b': True, 'c': BLANCO, 'al': PP_ALIGN.CENTER, 'sa': 5},
+    {'t': '"Si fuéramos como el promedio, un equipo y medio de esta sala estaría endeudado." ¿Les sorprende?', 's': 14.5, 'b': True, 'c': VERDE, 'al': PP_ALIGN.CENTER},
+])
+footer(s, dark=True)
+
+s = slide(); head(s, 'PREGUNTA 1', '¿Cuáles son las principales razones de endeudamiento en los hogares uruguayos?')
+text(s, 0.6, 1.95, 12.1, 0.8, [{'t': 'Las razones pueden ir desde cubrir gastos básicos hasta inversiones grandes. Su tarea: adivinar las más comunes. Solo suman si está en la lista.', 's': 14}])
+razones = ['arreglar la casa', 'cancelar una deuda', 'comprar un vehículo o muebles', 'comprar una vivienda',
+           'gastos corrientes (comida, ropa, limpieza)', 'gastos mensuales (UTE, OSE, alquiler)', 'inversión en un negocio', 'irse de vacaciones']
+for i, rz in enumerate(razones):
+    x = 0.6 + (i % 2) * 6.25; y = 2.95 + (i // 2) * 0.85
+    rbox(s, x, y, 5.95, 0.68, CREMA, line=VIOLETA, lw=1.5)
+    text(s, x + 0.25, y + 0.12, 5.5, 0.5, [{'t': rz, 's': 14, 'b': True}])
+footer(s)
+
+s = slide(); head(s, 'PREGUNTA 1 · TABLERO', 'Las respuestas de los uruguayos')
+datos = [('Gastos corrientes (comida, ropa, hogar)', 25, VERDE), ('Gastos mensuales (UTE, OSE, alquiler)', 18, CELESTE),
+         ('Cancelar una deuda previa', 17, VIOLETA), ('Vehículo o muebles', 15, NAVY),
+         ('Arreglo de la vivienda', 12, GRIS), ('Compra de vivienda', 5, GRIS),
+         ('Inversión en un negocio', 3, GRIS), ('Vacaciones', 2, GRIS)]
+y = 1.95
 for label, val, col in datos:
-    barra(s, 0.7, y, 6.6, val / 25.0, label, val, col)
-    y += 0.47
-text(s, 0.55, 6.2, 12.2, 0.7, [{'segs': [
-    {'t': 'El mensaje: ', 's': 14, 'b': True},
-    {'t': 'la mayoría se endeuda para llegar a fin de mes, no por gustos. Si la deuda es para gastos corrientes, lo que se necesita es más ingresos o menos gastos — no deuda.', 's': 14, 'b': True, 'c': ROJO},
+    barra(s, 0.7, y, 6.4, val / 25.0, label, val, col)
+    y += 0.5
+text(s, 0.6, 6.15, 12.1, 0.8, [{'segs': [
+    {'t': 'Cuando la deuda es para el día a día, lo que falta no es crédito: ', 's': 14.5, 'b': True},
+    {'t': 'son más ingresos o menos gastos.', 's': 14.5, 'b': True, 'c': ROJO},
 ]}])
 footer(s)
 
-# ------------------------------------------------------- 10 PREGUNTA 2 CATEGORÍAS
-s = slide(); head(s, 'PARTE I · PREGUNTA 2', 'La nota del BCU: ¿qué tan bien pagamos?')
-cats = [
-    ('1', 'Pago fuerte: al día o atraso < 10 días', 50, VERDE),
-    ('2', 'Pago adecuado: atraso 10–60 días', 7, AZUL),
-    ('3', 'Pago comprometido: 60–180 días', 3, AMAR),
-    ('4', 'Varias deudas, una irrecuperable (>180)', 10, ROSA),
-    ('5', 'TODAS las deudas irrecuperables', 30, ROJO),
-]
-text(s, 0.55, 1.62, 12.2, 0.4, [{'t': 'De cada 100 jóvenes deudores, ¿cuántos hay en cada categoría? (Central de Riesgos, BCU)', 's': 13, 'b': True, 'c': MUTED}])
-y = 2.2
-for n, label, val, col in cats:
-    barra(s, 0.7, y, 6.2, val / 50.0, f'CAT {n} · {label}', val, col)
-    y += 0.52
-b = box(s, 0.55, 5.05, 12.2, 1.35, fill=ROJO)
-text(s, 0.85, 5.22, 11.7, 1.05, [
-    {'t': '1 DE CADA 3 JÓVENES DEUDORES YA TIENE TODO INCOBRABLE', 's': 19, 'f': DISP, 'c': BLANCO, 'sa': 4},
-    {'t': 'La mitad paga impecable — y un tercio arrancó su vida financiera con la huella quemada 5 años. Esa diferencia se decide en jugadas como las del juego.', 's': 13, 'b': True, 'c': BLANCO},
+s = slide(); head(s, 'PREGUNTA 2', '¿Qué tan buenos deudores son los jóvenes uruguayos?')
+text(s, 0.6, 1.9, 12.1, 0.7, [{'t': 'La Central de Riesgos del BCU clasifica a cada deudor en 5 niveles según los días de atraso:', 's': 14.5, 'b': True}])
+cats = [('1', 'Capacidad de pago fuerte: al día o atraso menor a 10 días', VERDE),
+        ('2', 'Capacidad adecuada o problemas potenciales: 10 a 60 días', CELESTE),
+        ('3', 'Capacidad comprometida: 60 a 180 días', VIOLETA),
+        ('4', 'Varias deudas, al menos una irrecuperable (más de 180 días)', ROJO),
+        ('5', 'TODAS sus deudas irrecuperables', NAVY)]
+y = 2.65
+for n, d, col in cats:
+    c = rbox(s, 0.7, y, 0.6, 0.6, col)
+    text(s, 0.7, y + 0.08, 0.6, 0.45, [{'t': n, 's': 20, 'f': DISP, 'c': BLANCO, 'al': PP_ALIGN.CENTER}])
+    text(s, 1.5, y + 0.08, 11.2, 0.5, [{'t': d, 's': 14.5, 'b': True}], anchor=MSO_ANCHOR.MIDDLE)
+    y += 0.78
+text(s, 0.6, 6.6, 12.1, 0.5, [{'t': '¿Cómo creen que están repartidos los jóvenes? Los equipos se alternan nombrando categorías.', 's': 13.5, 'b': True, 'c': GRIS}])
+footer(s)
+
+s = slide(); head(s, 'PREGUNTA 2 · TABLERO', 'Así están repartidos (de cada 100 jóvenes deudores)')
+datos2 = [('CAT 1 · Pago fuerte', 50, VERDE), ('CAT 5 · Todo irrecuperable', 30, ROJO),
+          ('CAT 4 · Al menos una irrecuperable', 10, VIOLETA), ('CAT 2 · Pago adecuado', 7, CELESTE),
+          ('CAT 3 · Pago comprometido', 3, GRIS)]
+y = 2.0
+for label, val, col in datos2:
+    barra(s, 0.7, y, 6.4, val / 50.0, label, val, col)
+    y += 0.56
+b = rbox(s, 0.6, 5.15, 12.1, 1.35, ROJO)
+text(s, 0.95, 5.32, 11.5, 1.05, [
+    {'t': '1 DE CADA 3 YA TIENE TODAS SUS DEUDAS INCOBRABLES', 's': 20, 'f': DISP, 'c': BLANCO, 'sa': 4},
+    {'t': 'La mitad paga impecable — y un tercio arrancó con la huella quemada 5 años. Esa diferencia se juega en decisiones chicas.', 's': 13.5, 'b': True, 'c': BLANCO},
 ])
 footer(s)
 
-# ------------------------------------------------------- 11 LA PARTIDA: FORMATO EQUIPOS
-s = slide(); head(s, 'PARTE II · LA PARTIDA (25\')', 'Cómo se juega con ~20 y 3 máquinas')
-b = box(s, 0.55, 1.75, 6.0, 4.6, fill=PAPEL2)
-text(s, 0.85, 1.95, 5.5, 4.2, [
-    {'t': 'FORMATO', 's': 15, 'f': DISP, 'c': AZUL, 'sa': 8},
-    {'t': '• 3 equipos de ~6-7 alrededor de cada máquina.', 'sa': 7, 's': 13.5},
-    {'t': '• Cada decisión se debate en el equipo: ahí está el aprendizaje.', 'sa': 7, 's': 13.5, 'b': True},
-    {'t': '• Timer de 45 segundos por decisión: el debate es intenso pero corto.', 'sa': 7, 's': 13.5},
-    {'t': '• El ranking en vivo mete presión sana: se ve quién va primero, mes a mes.', 'sa': 7, 's': 13.5},
-    {'t': '• Una partida dura ~10 minutos. Da tiempo a revancha con eventos nuevos.', 'sa': 7, 's': 13.5},
+s = slide(); head(s, 'DESAFÍO FINANCIERO', 'Disparadores para la reflexión')
+b = rbox(s, 0.6, 1.8, 5.95, 4.5, CREMA, line=VERDE, lw=2)
+text(s, 0.9, 2.0, 5.4, 4.1, [
+    {'t': 'Sobre los motivos (P1)', 's': 15, 'b': True, 'c': CELESTE, 'sa': 7},
+    {'t': '• ¿Qué motivo les sorprendió más? ¿Por qué?', 's': 13.5, 'sa': 6},
+    {'t': '• ¿Por qué "vacaciones" o "invertir" están tan abajo?', 's': 13.5, 'sa': 6},
+    {'t': '• ¿Se puede evitar endeudarse por comida o servicios? ¿Hay que hacerlo?', 's': 13.5, 'sa': 6},
 ])
-roles = [
-    ('VOCERO/A', 'El único que toca la pantalla. Rota cada 3 meses del juego.', AMAR, TINTA),
-    ('CONTADOR/A', 'Obligado a hacer la cuenta EN VOZ ALTA: cuota × cuotas, antes de decidir.', AZUL, BLANCO),
-    ('ABOGADO/A DEL DIABLO', 'Tiene que defender la opción tentadora. Si nadie tienta, no hay mérito en resistir.', ROSA, BLANCO),
-]
-y = 1.75
-for t, d, col, tc in roles:
-    b = box(s, 6.95, y, 5.8, 1.4, fill=col)
-    text(s, 7.2, y + 0.15, 5.3, 1.1, [
-        {'t': t, 's': 14, 'f': DISP, 'c': tc, 'sa': 4},
-        {'t': d, 's': 12.5, 'b': True, 'c': tc},
-    ])
-    y += 1.62
+b = rbox(s, 6.8, 1.8, 5.95, 4.5, CREMA, line=VIOLETA, lw=2)
+text(s, 7.1, 2.0, 5.4, 4.1, [
+    {'t': 'Sobre las categorías (P2)', 's': 15, 'b': True, 'c': CELESTE, 'sa': 7},
+    {'t': '• ¿Qué piensan de que la mayoría esté al día?', 's': 13.5, 'sa': 6},
+    {'t': '• ¿Y de que 1 de cada 3 menores de 30 tenga todo irrecuperable?', 's': 13.5, 'sa': 6},
+    {'t': '• ¿Cómo afectan estas clasificaciones el acceso a crédito futuro? (puente a "huella financiera")', 's': 13.5, 'b': True, 'sa': 6},
+])
 footer(s)
 
-# ------------------------------------------------------- 12 EL AÑO DE JOAQUÍN
-s = slide(); head(s, 'PARTE II · EL RECORRIDO', 'El año de Joaquín: 10 decisiones')
-meses = [
-    ('M1', 'La factura de UTE atrasada', TINTA, 'FIJO'),
-    ('M2', 'La tarjeta clavada en $10.000', TINTA, 'FIJO'),
-    ('M3', 'Evento sorteado', AZUL, 'SORTEO'),
-    ('M4', 'CHEQUEO RÁPIDO (quiz con datos reales)', ROSA, 'QUIZ'),
-    ('M5', '¡Chau préstamo del auto!', TINTA, 'FIJO'),
-    ('M6', 'Evento sorteado', AZUL, 'SORTEO'),
-    ('M7', 'LA BOCHA: la vida no avisa', ROJO, 'SHOCK'),
-    ('M8', 'Imprevisto (heladera o celular)', ROJO, 'SORTEO'),
-    ('M9', 'La moto. El plan de siempre.', TINTA, 'FIJO'),
-    ('M12', 'Diciembre: cae el aguinaldo', TINTA, 'FIJO'),
-]
-y = 1.78
-for i, (m, t, col, tag) in enumerate(meses):
-    x = 0.55 + (i % 2) * 6.25; yy = y + (i // 2) * 0.95
-    b = box(s, x, yy, 5.95, 0.8, fill=PAPEL2, off=0.06)
-    c = box(s, x + 0.12, yy + 0.14, 0.72, 0.52, fill=col, lw=2, off=0.04)
-    tf = c.text_frame; p = tf.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
-    r = p.add_run(); r.text = m; r.font.size = Pt(13); r.font.name = DISP; r.font.color.rgb = BLANCO if col != AMAR else TINTA
-    text(s, x + 1.0, yy + 0.09, 3.9, 0.62, [{'t': t, 's': 12.3, 'b': True}], anchor=MSO_ANCHOR.MIDDLE)
-    chip(s, x + 4.95, yy + 0.22, 0.88, tag, fill=PAPEL, tc=MUTED, size=8.5, h=0.3)
-text(s, 0.55, 6.6, 12.2, 0.4, [{'t': 'Los sorteos y el quiz cambian en cada partida: la revancha nunca repite.', 's': 12.5, 'b': True, 'c': MUTED}])
+s = portada_seccion('MENSAJE CLAVE', 'El endeudamiento no siempre\nes malo…',
+                    'pero puede reflejar falta de opciones o de planificación. Un mal endeudamiento afecta la huella financiera y limita las opciones futuras.')
+
+# ============================================================ EL JUEGO
+agenda(1)
+
+s = slide(); head(s, 'EL JUEGO', 'Ahora ustedes son Joaquín')
+text(s, 0.6, 1.75, 12.1, 1.1, [
+    {'t': 'Joaquín gana $32.000, debe media vida y quiere una moto para hacer delivery.', 's': 18, 'b': True, 'sa': 5},
+    {'t': 'Van a manejarle la plata un año entero: 12 meses, una decisión por mes.', 's': 16, 'b': True, 'c': CELESTE},
+])
+hud = [('BILLETERA', 'la plata del mes', VERDE), ('FONDO', 'el colchón de emergencia', CELESTE),
+       ('INTERESES REGALADOS', 'lo pagado de más por financiar', ROJO),
+       ('RACHA', 'decisiones buenas seguidas = bonus', VIOLETA),
+       ('HUELLA', 'cada marca queda 5 años', NAVY)]
+y = 3.05
+for t, d, col in hud:
+    rbox(s, 0.6, y, 3.6, 0.55, col)
+    text(s, 0.6, y + 0.1, 3.6, 0.4, [{'t': t, 's': 12.5, 'f': DISP, 'c': BLANCO, 'al': PP_ALIGN.CENTER}])
+    text(s, 4.45, y + 0.08, 8.2, 0.45, [{'t': d, 's': 14, 'b': True}], anchor=MSO_ANCHOR.MIDDLE)
+    y += 0.68
+text(s, 0.6, 6.5, 12.1, 0.5, [{'t': 'En el camino: quizzes con los datos que acaban de ver, una bocha inesperada en julio y el aguinaldo en diciembre.', 's': 13.5, 'b': True, 'c': GRIS}])
 footer(s)
 
-# ------------------------------------------------------- 13 QUÉ ENSEÑA CADA MES FIJO
-s = slide(); head(s, 'PARTE II · LOS 5 MOMENTOS FIJOS', 'Qué enseña cada mes (y cómo reforzarlo)')
-lecciones = [
-    ('M1 · UTE', 'La factura "inocente" va al Clearing y marca la huella 5 años. Deuda para tapar deuda: se muda y engorda.', TINTA),
-    ('M2 · TARJETA', 'El pago mínimo es la deuda eterna: pagás y el saldo ni se entera. A la tarjeta se le gana con plan.', ROSA),
-    ('M5 · SE LIBERA PLATA', 'Cobrate primero: débito automático al fondo. La plata sin nombre se gasta sola.', VERDE),
-    ('M9 · LA MOTO', 'PAMY en acción. Con entrega ahorrada pedís menos: cada peso de entrega son dos que no regalás.', AZUL),
-    ('M12 · AGUINALDO', 'No es premio: es la mejor herramienta financiera del año. El 50/50 decidido antes también es un plan.', AMAR),
-]
-y = 1.78
-for t, d, col in lecciones:
-    b = box(s, 0.55, y, 12.2, 0.85, fill=PAPEL2, off=0.06)
-    c = box(s, 0.7, y + 0.14, 1.85, 0.56, fill=col, lw=2, off=0.04)
-    tf = c.text_frame; p = tf.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
-    r = p.add_run(); r.text = t; r.font.size = Pt(11.5); r.font.name = DISP
-    r.font.color.rgb = TINTA if col in (AMAR,) else BLANCO
-    text(s, 2.75, y + 0.1, 9.85, 0.68, [{'t': d, 's': 12.8, 'b': True}], anchor=MSO_ANCHOR.MIDDLE)
-    y += 0.98
-footer(s)
-
-# ------------------------------------------------------- 14 LOS QUIZZES
-s = slide(); head(s, 'PARTE II · LOS DATOS, DENTRO DEL JUEGO', 'Chequeos rápidos: 5 quizzes con datos reales')
-text(s, 0.55, 1.62, 12.2, 0.45, [{'t': 'En el Mes 4 SIEMPRE cae uno, sorteado. Respuesta correcta: +$2.000 y camino a la medalla "Ojo de Halcón".', 's': 13, 'b': True, 'c': MUTED}])
-quizzes = [
-    ('¿Dónde aparece la UTE impaga?', 'En el Clearing (no en el BCU). Los dos espejos.'),
-    ('¿Cuántos jóvenes ya pidieron préstamo?', '297.329 de 600.000: la mitad.'),
-    ('¿Para qué nos endeudamos?', 'Motivo nº1: los gastos de todos los días (25 de 100).'),
-    ('La temida categoría 5', '1 de cada 3 jóvenes deudores tiene todo incobrable.'),
-    ('¿Cuántas cuotas son tuyas?', 'De 36 cuotas de $3.999: 20 para vos, 16 para la financiera.'),
-]
-y = 2.25
-for t, d in quizzes:
-    b = box(s, 0.55, y, 12.2, 0.72, fill=PAPEL2, off=0.06)
-    text(s, 0.8, y + 0.05, 5.3, 0.6, [{'t': t, 's': 13, 'f': DISP}], anchor=MSO_ANCHOR.MIDDLE)
-    text(s, 6.3, y + 0.05, 6.3, 0.6, [{'t': d, 's': 12.5, 'b': True, 'c': AZUL}], anchor=MSO_ANCHOR.MIDDLE)
-    y += 0.84
-text(s, 0.55, 6.55, 12.2, 0.45, [{'t': 'Consejo: cuando cae el quiz, frená la sala 60 segundos y comentá el dato con todo el grupo.', 's': 13, 'b': True, 'c': ROJO}])
-footer(s)
-
-# ------------------------------------------------------- 15 DISPARADORES
-s = slide(); head(s, 'PARTE II · TU ROL DURANTE LA PARTIDA', 'Disparadores para frenar y preguntar')
-disp = [
-    ('EN CUALQUIER DECISIÓN', '"¿Por qué eligieron eso? ¿Quién estaba en contra?" — que el desacuerdo se escuche.'),
-    ('ANTE CUOTAS', '"¿Quién hizo la cuenta? ¿Cuánto da cuota × cuotas?" — el contador del equipo responde.'),
-    ('ANTE UN "YA MISMO"', '"¿Qué pasa si esperan un mes?" — un préstamo es una decisión de tiempo.'),
-    ('ANTE UNA MARCA', '"¿Quién ve esa marca y por cuánto tiempo?" — el banco mira los dos espejos, 5 años.'),
-    ('ANTE LA MOTO', '"¿El delivery paga la moto… si llueve dos semanas?" — deuda que genera ingreso vs. margen.'),
-    ('EN EL FEEDBACK', 'Leé "La posta" en voz alta cuando un equipo se clave: es la lección en una frase.'),
-]
-for i, (t, d) in enumerate(disp):
-    x = 0.55 + (i % 2) * 6.25; y = 1.8 + (i // 2) * 1.6
-    b = box(s, x, y, 5.95, 1.35, fill=PAPEL2)
-    text(s, x + 0.22, y + 0.13, 5.5, 1.1, [
-        {'t': t, 's': 12.5, 'f': DISP, 'c': AZUL, 'sa': 4},
-        {'t': d, 's': 12.3, 'b': True},
-    ])
-footer(s)
-
-# ------------------------------------------------------- 16 PAMY
-s = slide(); head(s, 'EL ENTREGABLE CONCEPTUAL', 'PAMY: la lista de cotejo antes de firmar')
-pamy = [
-    ('P', 'PRECISO', '¿Lo preciso de verdad… y lo preciso YA? Un préstamo es una decisión de tiempo: ¿qué pasa si espero?', AMAR, TINTA),
-    ('A', 'AHORRO', 'Tomar un préstamo ES ahorrar (después y con intereses). Si puedo pagar la cuota, ¿por qué no ahorro antes y soy mi propio prestamista?', VERDE, BLANCO),
-    ('M', 'MEJORES', 'Comparar TODAS las opciones por costo total: bancos (ojo BROU), financieras, casas de crédito, tarjetas, cooperativas. La TEA y la cuenta cuota × cuotas.', AZUL, BLANCO),
-    ('Y', 'Y DESPUÉS', '¿De dónde sale la cuota? ¿Qué gasto comprimo? ¿Cuál es el plan para sostener el ahorro y cumplirlo?', ROSA, BLANCO),
-]
-for i, (l, t, d, col, tc) in enumerate(pamy):
-    x = 0.55 + (i % 2) * 6.3; y = 1.78 + (i // 2) * 2.35
-    b = box(s, x, y, 5.95, 2.05, fill=col)
-    text(s, x + 0.25, y + 0.16, 1.0, 1.0, [{'t': l, 's': 40, 'f': DISP, 'c': tc}])
-    text(s, x + 1.35, y + 0.2, 4.45, 1.75, [
-        {'t': t, 's': 16, 'f': DISP, 'c': tc, 'sa': 5},
-        {'t': d, 's': 11.8, 'b': True, 'c': tc},
-    ])
-footer(s)
-
-# ------------------------------------------------------- 17 LA CUENTA QUE SALVA
-s = slide(); head(s, 'EL REFLEJO QUE HAY QUE INSTALAR', 'La cuenta que salva: cuota × cuotas')
-ej = [
-    ('$15.000 en 6 cuotas de $2.999', '6 × $2.999 = $17.994', '5 cuotas para vos · 1 entera para la financiera', VERDE),
-    ('$80.000 en 36 cuotas de $3.999', '36 × $3.999 = $143.964', '20 cuotas para vos · 16 enteras para la financiera', ROJO),
-]
+s = slide(); head(s, 'EL JUEGO', 'Cómo jugamos')
+pasos = [('1', 'EQUIPOS', 'Cada equipo, a su máquina. Elijan nombre (hasta 12 letras): así aparecen en el tablero.', VERDE),
+         ('2', 'CÓDIGO DE SALA', 'Las 3 máquinas ponen el MISMO código de 4 letras. Mismos eventos para todos: la comparación es justa.', CELESTE),
+         ('3', 'EL TABLERO', 'El proyector muestra la carrera en vivo: puntos, mes por mes, y la huella de cada equipo.', VIOLETA)]
 y = 1.85
+for n, t, d, col in pasos:
+    b = rbox(s, 0.6, y, 12.1, 1.35, CREMA, line=col, lw=2)
+    c = rbox(s, 0.85, y + 0.3, 0.75, 0.75, col)
+    text(s, 0.85, y + 0.4, 0.75, 0.6, [{'t': n, 's': 24, 'f': DISP, 'c': BLANCO, 'al': PP_ALIGN.CENTER}])
+    text(s, 1.9, y + 0.18, 10.6, 1.05, [
+        {'t': t, 's': 15, 'f': DISP, 'sa': 3},
+        {'t': d, 's': 13.5, 'b': True},
+    ])
+    y += 1.55
+text(s, 0.6, 6.5, 12.1, 0.5, [{'t': 'Reglas de oro: 45 segundos por decisión (hay reloj) · se debate en equipo · decide el vocero.', 's': 14, 'b': True, 'c': ROJO}])
+footer(s)
+
+s = slide(); head(s, 'EL JUEGO', 'Los roles del equipo')
+roles = [('VOCERO/A', 'El único que toca la pantalla. Rota cada 3 meses del juego.', VERDE),
+         ('CONTADOR/A', 'Hace la cuenta EN VOZ ALTA antes de decidir: cuota × cuotas.', CELESTE),
+         ('ABOGADO/A DEL DIABLO', 'Defiende la opción tentadora. Si nadie tienta, no hay mérito en resistir.', VIOLETA)]
+y = 1.9
+for t, d, col in roles:
+    b = rbox(s, 0.6, y, 12.1, 1.3, col)
+    text(s, 1.0, y + 0.18, 11.3, 1.0, [
+        {'t': t, 's': 17, 'f': DISP, 'c': BLANCO, 'sa': 4},
+        {'t': d, 's': 14.5, 'b': True, 'c': BLANCO},
+    ])
+    y += 1.5
+text(s, 0.6, 6.45, 12.1, 0.6, [{'t': 'Los demás: opinan, discuten y gritan lo justo. Todos deciden, uno toca.', 's': 15, 'b': True, 'c': GRIS}])
+footer(s)
+
+s = slide(NAVY); dots(s, 11.6, 0.6, VERDE); dots(s, 0.8, 5.2, VIOLETA)
+text(s, 0, 1.5, 13.333, 1.4, [{'t': '¡A JUGAR!', 's': 64, 'f': DISP, 'c': VERDE, 'al': PP_ALIGN.CENTER}])
+text(s, 0, 3.1, 13.333, 0.6, [{'t': 'chelabsweb.github.io/endeudarse-bien-stand', 's': 22, 'b': True, 'c': CREMA, 'al': PP_ALIGN.CENTER}])
+rbox(s, 4.42, 4.0, 4.5, 1.1, CREMA)
+text(s, 4.42, 4.12, 4.5, 0.9, [
+    {'t': 'CÓDIGO DE SALA', 's': 13, 'b': True, 'c': GRIS, 'al': PP_ALIGN.CENTER, 'sa': 2},
+    {'t': '_ _ _ _', 's': 30, 'f': DISP, 'c': NAVY, 'al': PP_ALIGN.CENTER},
+])
+text(s, 0, 5.4, 13.333, 0.9, [
+    {'t': '15 minutos · 12 meses · el tablero queda en el proyector', 's': 16, 'b': True, 'c': BLANCO, 'al': PP_ALIGN.CENTER, 'sa': 4},
+    {'t': '(el facilitador cambia esta pantalla por el modo Proyector del juego)', 's': 12.5, 'b': True, 'c': VERDE, 'al': PP_ALIGN.CENTER},
+])
+footer(s, dark=True)
+
+s = slide(); head(s, 'DESPUÉS DE LA PARTIDA', 'Leemos el tablero juntos')
+b = rbox(s, 0.6, 1.8, 5.95, 4.5, CREMA, line=VERDE, lw=2)
+text(s, 0.9, 2.0, 5.4, 4.1, [
+    {'t': 'EL PODIO', 's': 15, 'b': True, 'c': CELESTE, 'sa': 7},
+    {'t': '• Intereses regalados = plata quemada: ¿cuánto regaló cada equipo?', 's': 13.5, 'sa': 6},
+    {'t': '• Marcas en la huella = 5 años: ¿cuáles se podían evitar?', 's': 13.5, 'sa': 6},
+    {'t': '• Categoría BCU final: conectar con el tablero de la pregunta 2.', 's': 13.5, 'sa': 6},
+])
+b = rbox(s, 6.8, 1.8, 5.95, 4.5, CREMA, line=ROJO, lw=2)
+text(s, 7.1, 2.0, 5.4, 4.1, [
+    {'t': '"DONDE MÁS NOS CLAVAMOS"', 's': 15, 'b': True, 'c': ROJO, 'sa': 7},
+    {'t': 'El proyector muestra los errores más repetidos entre los equipos, con su explicación ("la posta").', 's': 13.5, 'sa': 6},
+    {'t': 'Por cada error repetido: ¿por qué era tentador? ¿qué señal lo delataba?', 's': 13.5, 'b': True, 'sa': 6},
+    {'t': 'Cada equipo cuenta su peor decisión y qué haría distinto.', 's': 13.5, 'b': True, 'sa': 6},
+])
+footer(s)
+
+s = slide(); head(s, 'LO QUE VIVIERON EN EL JUEGO', 'Las apariencias engañan')
+text(s, 0.6, 1.7, 12.1, 0.6, [{'t': 'El celular de $4.500 (como el de Juana en el quiz): tres formas de pagarlo.', 's': 15, 'b': True}])
+cols = [('CONTADO', '1 × $4.500', '$4.500', VERDE, 'Puede pedir descuento y pagar menos'),
+        ('CUOTAS', '3 × $1.500', '$4.500', CELESTE, 'Mismo total… ¿entonces quién paga la espera?'),
+        ('CUOTAS CON INTERESES', '12 × $500', '$6.000', ROJO, 'Paga $1.500 más: un tercio de celular extra')]
+for i, (t, cu, tot, col, nota) in enumerate(cols):
+    x = 0.6 + i * 4.18
+    b = rbox(s, x, 2.5, 3.9, 3.3, CREMA, line=col, lw=2.5)
+    text(s, x + 0.2, 2.7, 3.5, 3.0, [
+        {'t': t, 's': 14, 'f': DISP, 'c': col, 'sa': 6, 'al': PP_ALIGN.CENTER},
+        {'t': cu, 's': 17, 'b': True, 'al': PP_ALIGN.CENTER, 'sa': 6},
+        {'t': tot, 's': 30, 'f': DISP, 'c': col, 'al': PP_ALIGN.CENTER, 'sa': 8},
+        {'t': nota, 's': 12.5, 'b': True, 'al': PP_ALIGN.CENTER},
+    ])
+text(s, 0.6, 6.15, 12.1, 0.7, [{'t': 'Si alguien espera 3 meses para cobrar $4.500… otro debería estar dispuesto a dártelo por menos hoy. Y si Juana puede pagar $1.500 por mes: ¿por qué no ahorrarlos ANTES?', 's': 13.5, 'b': True, 'c': GRIS}])
+footer(s)
+
+s = slide(); head(s, 'LO QUE VIVIERON EN EL JUEGO', 'Lo barato sale caro: el pago mínimo')
+b = rbox(s, 0.6, 1.9, 5.95, 3.9, CREMA, line=VERDE, lw=2.5)
+text(s, 0.9, 2.15, 5.4, 3.4, [
+    {'t': 'PAGO TOTAL (o plan de ataque)', 's': 15, 'f': DISP, 'c': VERDE, 'sa': 8},
+    {'t': 'La deuda SE ACHICA', 's': 22, 'f': DISP, 'sa': 8},
+    {'t': 'Unos meses de cinturón apretado y la tarjeta muere. Intereses mínimos.', 's': 13.5, 'b': True},
+])
+b = rbox(s, 6.8, 1.9, 5.95, 3.9, CREMA, line=ROJO, lw=2.5)
+text(s, 7.1, 2.15, 5.4, 3.4, [
+    {'t': 'PAGO MÍNIMO', 's': 15, 'f': DISP, 'c': ROJO, 'sa': 8},
+    {'t': 'La deuda SE AGRANDA', 's': 22, 'f': DISP, 'sa': 8},
+    {'t': 'El mínimo apenas cubre intereses: pagás y pagás y el saldo ni se entera. La deuda eterna.', 's': 13.5, 'b': True},
+])
+text(s, 0.6, 6.1, 12.1, 0.6, [{'t': 'En el juego lo vivieron en el Mes 2. En la vida real, el resumen de la tarjeta lo muestra todos los meses.', 's': 14, 'b': True, 'c': GRIS}])
+footer(s)
+
+s = slide(); head(s, 'EL MÉTODO', 'PAMY: cuatro preguntas antes de firmar')
+pamy = [('P', 'PRECISO', '¿Lo preciso de verdad? ¿Y lo preciso YA? Un préstamo es una decisión de tiempo: ¿qué pasa si espero?', VERDE),
+        ('A', 'AHORRO', '¿Tengo ahorrado? ¿Voy a poder ahorrar? Si puedo pagar la cuota, puedo ser mi propio prestamista.', CELESTE),
+        ('M', 'MEJORES', '¿Cuál es mi mejor opción? Bancos (ojo BROU), financieras, cooperativas, tarjetas. Comparar el TOTAL, no la cuota.', VIOLETA),
+        ('Y', 'Y DESPUÉS', '¿Cómo lo voy a pagar? ¿Qué gasto comprimo? ¿Cuál es el plan para sostenerlo?', NAVY)]
+for i, (l, t, d, col) in enumerate(pamy):
+    x = 0.6 + (i % 2) * 6.25; y = 1.85 + (i // 2) * 2.3
+    b = rbox(s, x, y, 5.95, 2.05, col)
+    text(s, x + 0.3, y + 0.25, 1.1, 1.4, [{'t': l, 's': 44, 'f': DISP, 'c': BLANCO}])
+    text(s, x + 1.5, y + 0.28, 4.3, 1.6, [
+        {'t': t, 's': 16, 'f': DISP, 'c': BLANCO, 'sa': 4},
+        {'t': d, 's': 12, 'b': True, 'c': BLANCO},
+    ])
+footer(s)
+
+s = slide(); head(s, 'LA CUENTA QUE SALVA', '¿Cuántas cuotas son para vos?')
+ej = [('$15.000 en 6 cuotas de $2.999', '6 × $2.999 = $17.994', '5 cuotas para vos · 1 entera para la financiera', VERDE),
+      ('$80.000 en 36 cuotas de $3.999', '36 × $3.999 = $143.964', '20 cuotas para vos · 16 enteras para la financiera', ROJO)]
+y = 1.9
 for t, cta, rep, col in ej:
-    b = box(s, 0.55, y, 12.2, 1.75, fill=PAPEL2)
-    bar = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.55), Inches(y), Inches(0.22), Inches(1.75))
-    bar.fill.solid(); bar.fill.fore_color.rgb = col; bar.line.color.rgb = TINTA; bar.line.width = Pt(2); bar.shadow.inherit = False
-    text(s, 1.0, y + 0.15, 11.5, 1.5, [
-        {'t': t, 's': 15, 'b': True, 'sa': 4},
-        {'t': cta, 's': 22, 'f': DISP, 'c': col, 'sa': 4},
-        {'t': rep, 's': 14, 'b': True},
+    b = rbox(s, 0.6, y, 12.1, 1.8, CREMA, line=col, lw=2.5)
+    text(s, 1.0, y + 0.18, 11.3, 1.5, [
+        {'t': t, 's': 15, 'b': True, 'sa': 3},
+        {'t': cta, 's': 24, 'f': DISP, 'c': col, 'sa': 3},
+        {'t': rep, 's': 14.5, 'b': True},
     ])
     y += 2.05
-text(s, 0.55, 6.0, 12.2, 0.9, [
-    {'t': 'La cuota chica esconde el total gigante. Antes de firmar: total a pagar vs. precio contado — y pedirlo POR ESCRITO.', 's': 15, 'b': True, 'c': ROJO},
+text(s, 0.6, 6.1, 12.1, 0.8, [{'t': 'La TEA (tasa efectiva anual) dice cuánto interés pagás por año — se publica en 5 lugares. Pero la cuenta que nunca falla es cuota × cuotas, pedida POR ESCRITO.', 's': 14, 'b': True, 'c': GRIS}])
+footer(s)
+
+s = portada_seccion('MENSAJE CLAVE', 'Endeudarse es ahorrar…',
+                    'pero ahorrar no solamente para vos: también para pagarle los intereses a quien te prestó. Evaluar costo total, intereses y plazos es la base de una decisión responsable.')
+
+# ============================================================ HUELLA
+agenda(2)
+
+s = slide(); head(s, 'HUELLA FINANCIERA', 'Los dos espejos donde te miran')
+b = rbox(s, 0.6, 1.8, 5.95, 4.3, CELESTE)
+text(s, 0.9, 2.0, 5.4, 3.9, [
+    {'t': 'BCU · CENTRAL DE RIESGOS', 's': 15, 'f': DISP, 'c': BLANCO, 'sa': 7},
+    {'t': '• Solo sistema financiero regulado: bancos, financieras, cooperativas.', 's': 13, 'b': True, 'c': BLANCO, 'sa': 5},
+    {'t': '• Tu nota del 1 al 5 según los días de atraso.', 's': 13, 'b': True, 'c': BLANCO, 'sa': 5},
+    {'t': '• No borra la información aunque canceles la deuda.', 's': 13, 'b': True, 'c': BLANCO, 'sa': 5},
+])
+b = rbox(s, 6.8, 1.8, 5.95, 4.3, VIOLETA)
+text(s, 7.1, 2.0, 5.4, 3.9, [
+    {'t': 'CLEARING DE INFORMES', 's': 15, 'f': DISP, 'c': BLANCO, 'sa': 7},
+    {'t': '• Servicios (UTE, OSE), comercios, cheques rechazados, refinanciaciones.', 's': 13, 'b': True, 'c': BLANCO, 'sa': 5},
+    {'t': '• Muestra quién te consultó en los últimos 6 meses.', 's': 13, 'b': True, 'c': BLANCO, 'sa': 5},
+    {'t': '• Las marcas duran 5 años desde el registro.', 's': 13, 'b': True, 'c': BLANCO, 'sa': 5},
+])
+text(s, 0.6, 6.3, 12.1, 0.6, [{'t': 'EL BANCO MIRA LOS DOS. En el juego: por eso la UTE impaga también marcó la huella.', 's': 16, 'f': DISP, 'al': PP_ALIGN.CENTER}])
+footer(s)
+
+s = slide(); head(s, 'HUELLA FINANCIERA', 'Consultá la tuya: es gratis')
+b = rbox(s, 0.6, 1.85, 5.95, 4.3, CREMA, line=CELESTE, lw=2)
+if os.path.exists(QR2):
+    s.shapes.add_picture(QR2, Inches(1.0), Inches(2.2), Inches(2.1), Inches(2.1))
+text(s, 3.3, 2.4, 3.1, 2.0, [
+    {'t': 'BCU', 's': 16, 'f': DISP, 'c': CELESTE, 'sa': 5},
+    {'t': 'consultadeuda.bcu.gub.uy', 's': 14, 'b': True, 'sa': 5},
+    {'t': 'Tu categoría y tus deudas en el sistema financiero.', 's': 12, 'b': True, 'c': GRIS},
+])
+b = rbox(s, 6.8, 1.85, 5.95, 4.3, CREMA, line=VIOLETA, lw=2)
+text(s, 7.2, 2.4, 5.2, 2.6, [
+    {'t': 'CLEARING', 's': 16, 'f': DISP, 'c': VIOLETA, 'sa': 5},
+    {'t': 'clearing.com.uy/personas', 's': 14, 'b': True, 'sa': 5},
+    {'t': 'Servicios, cheques, refinanciaciones y quién te consultó. La primera consulta del período no tiene costo.', 's': 12, 'b': True, 'c': GRIS},
 ])
 footer(s)
 
-# ------------------------------------------------------- 18 LOS DOS ESPEJOS
-s = slide(); head(s, 'PARTE III · LA HUELLA (15\')', 'Los dos espejos: BCU y Clearing')
-b = box(s, 0.55, 1.75, 6.0, 4.3, fill=AZUL)
-text(s, 0.85, 1.95, 5.5, 3.9, [
-    {'t': 'BCU · CENTRAL DE RIESGOS', 's': 15, 'f': DISP, 'c': BLANCO, 'sa': 8},
-    {'t': '• Solo sistema financiero regulado: bancos, financieras, cooperativas.', 'c': BLANCO, 'sa': 6, 's': 12.8, 'b': True},
-    {'t': '• Tu nota del 1 al 5 según días de atraso.', 'c': BLANCO, 'sa': 6, 's': 12.8, 'b': True},
-    {'t': '• No borra la información, aunque canceles la deuda.', 'c': BLANCO, 'sa': 6, 's': 12.8, 'b': True},
-    {'t': '• Gratis: consultadeuda.bcu.gub.uy', 'c': AMAR, 'sa': 6, 's': 13.5, 'b': True},
+s = slide(); head(s, 'CASO', 'La huella de Joaquín')
+text(s, 0.6, 1.75, 12.1, 0.7, [{'t': 'Joaquín, 27 años, técnico de mantenimiento en Canelones. Gana $32.000 por mes.', 's': 15.5, 'b': True}])
+b = rbox(s, 0.6, 2.5, 5.95, 3.9, CREMA, line=CELESTE, lw=2)
+text(s, 0.9, 2.7, 5.4, 3.5, [
+    {'t': 'Historial financiero', 's': 14, 'b': True, 'c': CELESTE, 'sa': 6},
+    {'t': '• Tarjeta con saldo de $10.000: paga el mínimo hace 8 meses (sin atraso).', 's': 12.5, 'sa': 5},
+    {'t': '• Préstamo de $120.000 por el auto hace 3 años: le quedan $20.000, al día.', 's': 12.5, 'sa': 5},
+    {'t': '• UTE atrasada 2 meses ($4.000).', 's': 12.5, 'sa': 5},
+    {'t': '• Un cheque rechazado que sustituyó.', 's': 12.5, 'sa': 5},
+    {'t': '• Sin deudas irrecuperables.', 's': 12.5, 'sa': 5},
 ])
-b = box(s, 6.85, 1.75, 5.9, 4.3, fill=ROSA)
-text(s, 7.15, 1.95, 5.4, 3.9, [
-    {'t': 'CLEARING DE INFORMES', 's': 15, 'f': DISP, 'c': BLANCO, 'sa': 8},
-    {'t': '• Servicios (UTE, OSE), comercios, cheques rechazados, refinanciaciones.', 'c': BLANCO, 'sa': 6, 's': 12.8, 'b': True},
-    {'t': '• Muestra QUIÉN te consultó en los últimos 6 meses.', 'c': BLANCO, 'sa': 6, 's': 12.8, 'b': True},
-    {'t': '• Las marcas duran 5 años desde el registro.', 'c': BLANCO, 'sa': 6, 's': 12.8, 'b': True},
-    {'t': '• clearing.com.uy/personas', 'c': AMAR, 'sa': 6, 's': 13.5, 'b': True},
-])
-text(s, 0.55, 6.25, 12.2, 0.6, [{'t': 'EL BANCO MIRA LOS DOS. Por eso en el juego la UTE impaga también marca la huella.', 's': 16, 'f': DISP, 'c': TINTA, 'al': PP_ALIGN.CENTER}])
-footer(s)
-
-# ------------------------------------------------------- 19 PODIO + JOAQUÍN
-s = slide(); head(s, 'PARTE III · DEL PODIO AL CASO', 'Leer el podio… y decidir: ¿le prestarían?')
-b = box(s, 0.55, 1.75, 6.0, 4.5, fill=PAPEL2)
-text(s, 0.85, 1.95, 5.5, 4.1, [
-    {'t': 'EL PODIO COMO CIERRE', 's': 14, 'f': DISP, 'c': AZUL, 'sa': 7},
-    {'t': '• Intereses regalados = plata quemada: ¿cuánto regaló cada equipo?', 'sa': 6, 's': 13},
-    {'t': '• Marcas = 5 años de huella: ¿cuáles se podían evitar?', 'sa': 6, 's': 13},
-    {'t': '• Cada equipo cuenta su PEOR decisión y qué haría distinto (minuto de oro por equipo).', 'sa': 6, 's': 13, 'b': True},
-    {'t': '• La categoría BCU del podio conecta directo con la pregunta 2 del rompehielo.', 'sa': 6, 's': 13},
-])
-b = box(s, 6.85, 1.75, 5.9, 4.5, fill=PAPEL2)
-text(s, 7.15, 1.95, 5.4, 4.1, [
-    {'t': '¿LE PRESTARÍAN A JOAQUÍN?', 's': 14, 'f': DISP, 'c': ROSA, 'sa': 7},
-    {'t': 'Pide $60.000 para la moto (delivery: +$7.000/mes).', 'sa': 6, 's': 13, 'b': True},
-    {'t': 'El BCU dice: tarjeta y préstamo al día → categoría 1. Parece que sí…', 'sa': 6, 's': 13},
-    {'t': 'El Clearing dice: UTE 60 días, refinanciación, cheque rechazado, 6 consultas. Mmm…', 'sa': 6, 's': 13},
-    {'t': 'Debate y votación: ¿pesa más la nota del BCU o el Clearing? ¿Importa que la moto genere ingresos?', 'sa': 6, 's': 13, 'b': True},
+b = rbox(s, 6.8, 2.5, 5.95, 3.9, CREMA, line=VIOLETA, lw=2)
+text(s, 7.1, 2.7, 5.4, 3.5, [
+    {'t': 'Acciones recientes', 's': 14, 'b': True, 'c': VIOLETA, 'sa': 6},
+    {'t': '• Refinanció la deuda de la tarjeta con una financiera.', 's': 12.5, 'sa': 5},
+    {'t': '• Canceló un préstamo menor de $5.000 hace un año.', 's': 12.5, 'sa': 5},
+    {'t': '• 6 consultas a su Clearing en 6 meses (Anda, Itaú, Motociclo, Creditel ×2, BROU).', 's': 12.5, 'sa': 10},
+    {'t': 'Quiere pedir $50.000 en el banco para la moto del delivery.', 's': 13.5, 'b': True, 'c': NAVY},
 ])
 footer(s)
 
-# ------------------------------------------------------- 20 IA
-s = slide(); head(s, 'PARTE IV · DECIDIR CONSCIENTE (15\')', 'La IA asesora: introspección antes de firmar')
-b = box(s, 0.55, 1.75, 6.0, 4.5, fill=PAPEL2)
-text(s, 0.85, 1.95, 5.5, 4.1, [
-    {'t': 'LA DINÁMICA', 's': 14, 'f': DISP, 'c': AZUL, 'sa': 7},
-    {'t': '1 · Antes: cada uno anota su decisión (¿tomarían el préstamo?) y su convicción del 1 al 7.', 'sa': 6, 's': 13},
-    {'t': '2 · En rol de Joaquín, conversan con la IA asesora (mini-web del stand).', 'sa': 6, 's': 13},
-    {'t': '3 · Después: ¿mantienen la decisión? ¿Cambió el 1-7? ¿Qué apareció que no habían pensado?', 'sa': 6, 's': 13, 'b': True},
+s = slide(); head(s, 'CASO', '¿Le prestarían?')
+b = rbox(s, 0.6, 1.8, 5.95, 4.3, CELESTE)
+text(s, 0.9, 2.0, 5.4, 3.9, [
+    {'t': 'EL BCU DICE…', 's': 15, 'f': DISP, 'c': BLANCO, 'sa': 7},
+    {'t': 'Tarjeta al día (paga el mínimo, pero sin atraso).', 's': 13, 'b': True, 'c': BLANCO, 'sa': 5},
+    {'t': 'Préstamo del auto al día.', 's': 13, 'b': True, 'c': BLANCO, 'sa': 5},
+    {'t': 'La UTE y el cheque NO entran acá.', 's': 13, 'b': True, 'c': BLANCO, 'sa': 8},
+    {'t': '→ Categoría 1: parece que SÍ.', 's': 17, 'f': DISP, 'c': CREMA},
 ])
-b = box(s, 6.85, 1.75, 5.9, 4.5, fill=TINTA)
-text(s, 7.15, 1.95, 5.4, 4.1, [
-    {'t': 'LO QUE PREGUNTA LA IA', 's': 14, 'f': DISP, 'c': AMAR, 'sa': 7},
-    {'t': '"¿Por qué necesitás este préstamo?"', 'c': BLANCO, 'sa': 5, 's': 13, 'b': True},
-    {'t': '"¿Cómo vas a cubrir las cuotas?"', 'c': BLANCO, 'sa': 5, 's': 13, 'b': True},
-    {'t': '"¿Y si surge un imprevisto mientras pagás?"', 'c': BLANCO, 'sa': 5, 's': 13, 'b': True},
-    {'t': '"Imaginate tu vida en un año con esta decisión."', 'c': BLANCO, 'sa': 5, 's': 13, 'b': True},
-    {'t': 'La IA no juzga ni recomienda: guía la reflexión. Ese es el punto.', 'c': AMAR, 'sa': 5, 's': 12.5, 'b': True},
+b = rbox(s, 6.8, 1.8, 5.95, 4.3, VIOLETA)
+text(s, 7.1, 2.0, 5.4, 3.9, [
+    {'t': 'EL CLEARING DICE…', 's': 15, 'f': DISP, 'c': BLANCO, 'sa': 7},
+    {'t': 'Operación incumplida: SÍ (UTE, 60 días).', 's': 13, 'b': True, 'c': BLANCO, 'sa': 5},
+    {'t': 'Refinanciación: SÍ (la tarjeta).', 's': 13, 'b': True, 'c': BLANCO, 'sa': 5},
+    {'t': 'Cheque rechazado: SÍ. Consultas: 6 en 6 meses.', 's': 13, 'b': True, 'c': BLANCO, 'sa': 8},
+    {'t': '→ Mmm… acá la cosa cambia.', 's': 17, 'f': DISP, 'c': CREMA},
+])
+text(s, 0.6, 6.3, 12.1, 0.6, [{'t': 'Debate y votación: ¿le prestan? ¿Pesa más la nota del BCU o el Clearing? ¿Importa que la moto genere ingresos?', 's': 14, 'b': True, 'c': GRIS, 'al': PP_ALIGN.CENTER}])
+footer(s)
+
+s = portada_seccion('MENSAJE CLAVE', 'La huella es tu reputación',
+                    'Cuidarla da acceso a mejores oportunidades y condiciones. Cada decisión cuenta: pagar a tiempo, conocer el historial y planificar con responsabilidad.')
+
+# ============================================================ DECIDIR BIEN
+agenda(3)
+
+s = slide(); head(s, 'DECIDIR BIEN', 'La decisión de Joaquín, en números')
+cols = [('HOY', ['Sueldo: $32.000', 'Gastos: −$24.700', 'Deudas: −$7.000', 'Neto: $300', 'Sin fondo de emergencia', 'Debe $4.000 de UTE'], GRIS),
+        ('EN 4 MESES', ['Sueldo: $32.000', 'Gastos: −$24.700', 'Deudas: −$2.000', 'Neto: $4.300', 'Sin fondo de emergencia', 'Debe $4.000 de UTE'], CELESTE),
+        ('CON PRÉSTAMO', ['Sueldo: $32.000', 'PedidosYa: +$7.000', 'Gastos: −$24.700 · Deudas: −$5.999', 'Neto: $7.301', 'Fondo de emergencia: $6.000', 'Sin deuda de UTE'], VERDE)]
+for i, (t, filas, col) in enumerate(cols):
+    x = 0.6 + i * 4.18
+    b = rbox(s, x, 1.85, 3.9, 4.35, CREMA, line=col, lw=2.5)
+    items = [{'t': t, 's': 16, 'f': DISP, 'c': col, 'al': PP_ALIGN.CENTER, 'sa': 8}]
+    for f in filas:
+        items.append({'t': f, 's': 12.8, 'b': True, 'al': PP_ALIGN.CENTER, 'sa': 5})
+    text(s, x + 0.15, 2.05, 3.6, 4.0, items)
+text(s, 0.6, 6.4, 12.1, 0.5, [{'t': 'Préstamo: $60.000 · cuota $3.999 · la moto suma ~$7.000/mes de delivery… si todo sale bien.', 's': 13.5, 'b': True, 'c': GRIS, 'al': PP_ALIGN.CENTER}])
+footer(s)
+
+s = slide(); head(s, 'DECIDIR BIEN', 'Ahora ustedes son Joaquín (otra vez)')
+text(s, 0.6, 1.8, 12.1, 1.5, [
+    {'t': 'La consigna: contarle el plan a la IA asesora y dejarse hacer preguntas.', 's': 17, 'b': True, 'sa': 8},
+    {'t': 'Antes de empezar, cada uno anota:', 's': 15, 'b': True, 'c': CELESTE},
+])
+b = rbox(s, 0.6, 3.3, 12.1, 1.6, CREMA, line=VERDE, lw=2)
+text(s, 1.0, 3.5, 11.3, 1.2, [
+    {'t': '¿Tomarían el préstamo?  SÍ / NO', 's': 18, 'f': DISP, 'sa': 5},
+    {'t': 'Y del 1 al 7: ¿qué tan convencidos están de que es una buena decisión?', 's': 15, 'b': True},
+])
+text(s, 0.6, 5.2, 12.1, 1.2, [
+    {'t': 'La IA no les va a decir qué hacer: pregunta cómo van a cubrir las cuotas, qué pasa si surge un imprevisto, y cómo se imaginan la vida en un año con esa decisión.', 's': 14, 'b': True, 'c': GRIS},
 ])
 footer(s)
 
-# ------------------------------------------------------- 21 CIERRE
-s = slide(); head(s, 'CIERRE (10\')', 'Minuto de oro: decirlo es creerlo')
-text(s, 0.55, 1.75, 12.2, 1.6, [
-    {'t': 'Cada participante piensa UNA cosa del taller que no quiere olvidar… y se la dice a alguien.', 's': 17, 'b': True, 'sa': 6},
-    {'t': 'Verbalizar el aprendizaje lo consolida (efecto "decirlo es creerlo", manual Pin!). Con equipos: un minuto de oro por equipo, a partir de su partida.', 's': 13.5, 'c': MUTED},
+s = slide(); head(s, 'DECIDIR BIEN', 'Después de hablar con la IA')
+b = rbox(s, 0.6, 1.9, 12.1, 3.6, CREMA, line=VIOLETA, lw=2)
+text(s, 1.0, 2.2, 11.3, 3.0, [
+    {'t': '¿Mantienen la decisión?', 's': 22, 'f': DISP, 'sa': 8},
+    {'t': 'Indiquen de nuevo, del 1 al 7, qué tan convencidos están.', 's': 16, 'b': True, 'sa': 8},
+    {'t': '¿Cambió algo? ¿Qué apareció en la conversación que no habían pensado?', 's': 16, 'b': True, 'c': VIOLETA},
 ])
-b = box(s, 0.55, 3.4, 12.2, 1.7, fill=AMAR)
-text(s, 0.9, 3.62, 11.6, 1.3, [
-    {'t': 'LA IDEA FUERZA', 's': 14, 'f': DISP, 'sa': 5},
-    {'t': '"Pedir prestado es ahorrar: un préstamo es un compromiso de ahorro — para vos y para pagarle los intereses a quien te prestó — no una solución inmediata."', 's': 17, 'f': DISP},
-])
-text(s, 0.55, 5.4, 12.2, 1.2, [
-    {'t': 'Y la huella queda: cada decisión del juego —y de la vida— construye la reputación financiera que abre o cierra puertas 5 años.', 's': 14.5, 'b': True},
-])
+text(s, 0.6, 5.8, 12.1, 0.8, [{'t': 'El punto no es la respuesta: es descubrir que reflexionar ANTES de firmar cambia la decisión.', 's': 15, 'b': True, 'c': GRIS}])
 footer(s)
 
-# ------------------------------------------------------- 22 TICKET DE SALIDA
-s = slide(); head(s, 'TICKET DE SALIDA', 'Se van con el juego en el bolsillo')
-qr1, qr2 = '/tmp/qr_juego.png', '/tmp/qr_consulta.png'
-b = box(s, 0.55, 1.8, 6.0, 4.4, fill=PAPEL2)
-if os.path.exists(qr1):
-    s.shapes.add_picture(qr1, Inches(0.95), Inches(2.15), Inches(2.2), Inches(2.2))
-text(s, 3.35, 2.3, 3.0, 2.4, [
-    {'t': 'LLEVATE EL JUEGO', 's': 15, 'f': DISP, 'c': AZUL, 'sa': 6},
-    {'t': 'El QR está en la constancia final de cada partida. Abierto una vez, funciona sin internet.', 's': 12.5, 'b': True},
-])
-text(s, 0.95, 4.6, 5.2, 1.4, [{'t': 'chelabsweb.github.io/endeudarse-bien-stand', 's': 13, 'b': True, 'c': AZUL}])
-b = box(s, 6.85, 1.8, 5.9, 4.4, fill=PAPEL2)
-if os.path.exists(qr2):
-    s.shapes.add_picture(qr2, Inches(7.25), Inches(2.15), Inches(2.2), Inches(2.2))
-text(s, 9.65, 2.3, 2.9, 2.4, [
-    {'t': 'TU HUELLA REAL, GRATIS', 's': 15, 'f': DISP, 'c': ROSA, 'sa': 6},
-    {'t': 'Que cada uno consulte su huella de verdad al llegar a casa.', 's': 12.5, 'b': True},
-])
-text(s, 7.25, 4.6, 5.2, 1.4, [
-    {'t': 'consultadeuda.bcu.gub.uy', 's': 13, 'b': True, 'c': ROSA, 'sa': 3},
-    {'t': '+ Tarjeta takeaway impresa (4 por hoja A4) con las reglas de oro.', 's': 12, 'b': True, 'c': MUTED},
-])
+s = portada_seccion('MENSAJE CLAVE', 'Los números no alcanzan',
+                    'Tomar decisiones financieras requiere introspección y planificación. Reflexionar antes de actuar marca la diferencia entre una decisión que te empodera y una que te limita.')
+
+# ============================================================ CIERRE
+agenda(4)
+
+s = slide(); head(s, 'MINUTO DE ORO', 'Las ideas clave del taller')
+ideas = [('EL DESAFÍO', 'La mitad de los jóvenes ya tiene deuda, y la mayoría se endeuda para el día a día. Endeudarse bien se aprende antes.', VERDE),
+         ('EL JUEGO', 'Vivimos un año de decisiones: cuotas, mínimos, imprevistos, aguinaldo. El modelo PAMY y la cuenta cuota × cuotas.', CELESTE),
+         ('LA HUELLA', 'BCU y Clearing: los dos espejos. Cada clavo marca 5 años; el banco los mira a los dos.', VIOLETA),
+         ('DECIDIR BIEN', 'Con la IA reflexionamos cómo nos preparamos para un préstamo. La introspección también es una herramienta financiera.', NAVY)]
+for i, (t, d, col) in enumerate(ideas):
+    x = 0.6 + (i % 2) * 6.25; y = 1.85 + (i // 2) * 2.25
+    b = rbox(s, x, y, 5.95, 2.0, CREMA, line=col, lw=2.5)
+    text(s, x + 0.25, y + 0.18, 5.45, 1.7, [
+        {'t': t, 's': 14, 'f': DISP, 'c': col, 'sa': 5},
+        {'t': d, 's': 12.8, 'b': True},
+    ])
+text(s, 0.6, 6.45, 12.1, 0.6, [{'t': 'Cada participante elige UNA idea que no quiere olvidar… y se la dice a alguien. Decirlo es creerlo.', 's': 14.5, 'b': True, 'c': ROJO}])
 footer(s)
 
-# ------------------------------------------------------- 23 FICHA TÉCNICA
-s = slide(); head(s, 'ANEXO', 'Ficha técnica y solución de problemas')
-text(s, 0.55, 1.75, 12.2, 4.8, [
-    {'t': 'EL JUEGO', 's': 14, 'f': DISP, 'c': AZUL, 'sa': 5},
-    {'t': '• URL: chelabsweb.github.io/endeudarse-bien-stand  ·  Un solo archivo HTML, PWA offline, cero instalación.', 'sa': 4, 's': 12.5},
-    {'t': '• Modos: normal (1 jugador), Duelo (2, pasa-la-tablet), Sala (varias máquinas + proyector, requiere internet).', 'sa': 4, 's': 12.5},
-    {'t': '• Estadísticas del día: 5 toques en el membrete de la portada. Ranking del día: se limpia solo cada día.', 'sa': 10, 's': 12.5},
-    {'t': 'SI ALGO FALLA', 's': 14, 'f': DISP, 'c': ROJO, 'sa': 5},
-    {'t': '• No conecta la sala → revisar wifi; si no hay, Plan B: modo normal + comparar en el Ranking del día.', 'sa': 4, 's': 12.5},
-    {'t': '• Un equipo se desconecta a mitad de partida → sigue jugando offline; su resultado se canta a mano en el cierre.', 'sa': 4, 's': 12.5},
-    {'t': '• La pantalla quedó dormida → tocar y "¡Sigo acá!". En modo sala el timer de inactividad está desactivado.', 'sa': 10, 's': 12.5},
-    {'t': 'MATERIALES DEL KIT', 's': 14, 'f': DISP, 'c': VERDE, 'sa': 5},
-    {'t': '• Este mazo · Guía del facilitador (PDF) · Tarjetas takeaway · Prompt de la IA asesora · Manual Pin! 2025 (marco oficial).', 'sa': 4, 's': 12.5},
-    {'t': '• Repo: github.com/ChelabsWeb/endeudarse-bien-stand — esta presentación se regenera con gen_formadores_pptx.py.', 'sa': 4, 's': 12.5},
+s = slide(); head(s, 'TICKET DE SALIDA', 'Se llevan el juego (y su huella)')
+b = rbox(s, 0.6, 1.85, 5.95, 4.3, CREMA, line=VERDE, lw=2)
+if os.path.exists(QR1):
+    s.shapes.add_picture(QR1, Inches(1.0), Inches(2.2), Inches(2.1), Inches(2.1))
+text(s, 3.3, 2.4, 3.1, 2.2, [
+    {'t': 'LLEVATE EL JUEGO', 's': 15, 'f': DISP, 'c': VERDE, 'sa': 5},
+    {'t': 'Escanealo y jugalo cuando quieras, con quien quieras. Funciona sin internet.', 's': 12.5, 'b': True},
 ])
+text(s, 1.0, 4.55, 5.2, 0.5, [{'t': 'chelabsweb.github.io/endeudarse-bien-stand', 's': 12, 'b': True, 'c': VERDE}])
+b = rbox(s, 6.8, 1.85, 5.95, 4.3, CREMA, line=CELESTE, lw=2)
+if os.path.exists(QR2):
+    s.shapes.add_picture(QR2, Inches(7.2), Inches(2.2), Inches(2.1), Inches(2.1))
+text(s, 9.5, 2.4, 3.0, 2.2, [
+    {'t': 'TU HUELLA REAL', 's': 15, 'f': DISP, 'c': CELESTE, 'sa': 5},
+    {'t': 'Consultá tu huella de verdad, gratis, al llegar a casa.', 's': 12.5, 'b': True},
+])
+text(s, 7.2, 4.55, 5.2, 0.5, [{'t': 'consultadeuda.bcu.gub.uy', 's': 12, 'b': True, 'c': CELESTE}])
 footer(s)
+
+s = slide(NAVY); dots(s, 11.6, 0.6, VERDE); dots(s, 0.8, 5.2, VIOLETA)
+text(s, 1.0, 2.3, 11.3, 2.8, [
+    {'t': 'LA IDEA FUERZA', 's': 18, 'f': DISP, 'c': VERDE, 'sa': 10},
+    {'t': 'Un préstamo es un compromiso de ahorro,\nno una solución inmediata.', 's': 32, 'f': DISP, 'c': CREMA, 'sa': 10},
+    {'t': 'Reflexionar, planificar y actuar con conciencia: las claves de un endeudamiento saludable y una huella financiera positiva.', 's': 15, 'b': True, 'c': BLANCO},
+])
+pin(s, 11.2, 6.3)
+footer(s, dark=True)
 
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Formacion_de_Formadores_Endeudarse_Bien_2026.pptx')
 prs.save(out)
