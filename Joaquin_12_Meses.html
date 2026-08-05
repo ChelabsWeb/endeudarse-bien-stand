@@ -336,8 +336,17 @@ body.j1 #hud{border-top-color:var(--rosa)}
 #mkOv{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--tinta);z-index:60;padding:20px}
 #mkOv.on{display:flex}
 #mkOv .kick{color:var(--amarillo);font-weight:800;letter-spacing:3px;font-size:clamp(13px,2vw,18px)}
-#mkRows{display:flex;flex-direction:column;gap:10px;width:min(560px,92vw)}
-.mkRow{display:flex;align-items:center;gap:12px;background:var(--papel2);border:3px solid var(--tinta);box-shadow:5px 5px 0 rgba(0,0,0,.35);border-radius:8px;padding:10px 16px;animation:cardIn .3s cubic-bezier(.34,1.56,.64,1) both}
+#mkRows{position:relative;width:min(560px,92vw)}
+/* absolute + translateY: el FLIP entre posiciones se anima por transform (GPU), no por reorden del DOM */
+.mkRow{position:absolute;left:0;right:0;display:flex;align-items:center;gap:12px;background:var(--papel2);border:3px solid var(--tinta);box-shadow:5px 5px 0 rgba(0,0,0,.35);border-radius:8px;padding:10px 16px}
+#mkOv.spec #mkRows{width:min(820px,94vw)}
+#mkOv.spec .mkRow{padding:16px 26px;gap:16px}
+#mkOv.spec .mkPos{font-size:clamp(24px,3.6vw,38px);min-width:58px}
+#mkOv.spec .mkAv{width:52px;height:52px}
+#mkOv.spec .mkNom{font-size:clamp(24px,3.4vw,38px)}
+#mkOv.spec .mkSc{font-size:clamp(22px,3.2vw,34px)}
+#mkOv.spec .mkD{font-size:clamp(17px,2.4vw,24px);min-width:60px}
+#mkOv.spec #mkNota{font-size:clamp(16px,2.4vw,26px);color:var(--amarillo)}
 .mkRow.yo{background:var(--amarillo)}
 .mkRow.caida{opacity:.5}
 .mkPos{font-size:clamp(18px,3vw,26px);min-width:44px}
@@ -1809,8 +1818,8 @@ function cerrarRonda(){
 function armarTabla(){
   const rows=rosterIds().map(k=>({id:k, ini:SALA.prog[k].ini, av:SALA.prog[k].av||null, score:SALA.prog[k].score||0}));
   rows.sort((a,b)=>b.score-a.score);
-  const prev={}; (SALA.prevTabla||[]).forEach(r=>{ prev[r.id]=r.pos; });
-  rows.forEach((r,i)=>{ r.pos=i+1; r.dPos=prev[r.id]?prev[r.id]-r.pos:0; });
+  const prev={}; (SALA.prevTabla||[]).forEach(r=>{ prev[r.id]={pos:r.pos, score:r.score}; });
+  rows.forEach((r,i)=>{ r.pos=i+1; const pv=prev[r.id]; r.dPos=pv?pv.pos-r.pos:0; r.pScore=pv?pv.score:null; });
   SALA.prevTabla=rows;
   return rows;
 }
@@ -1820,7 +1829,7 @@ function saltarRonda(){ cerrarRonda(); }
 function recibirRonda(p){
   if(!SALA) return;
   SALA.rondaT0=Date.now(); SALA.rondaDur=p.dur||RONDA_DUR; SALA.rFase='ronda';
-  if(SALA.spec){ SALA.rn=p.n; SALA.fase='ronda'; pintarEspectador(); return; }
+  if(SALA.spec){ SALA.rn=p.n; SALA.fase='ronda'; cerrarMk(); pintarEspectador(); return; }
   if(!SALA.playing){ SALA.pendRonda=p; return; } /* llegó durante la cuenta regresiva: se aplica al salir */
   /* guard contra S.i (la verdad LOCAL): si fuera contra SALA.rn, un host-jugador se filtraría su propio eco
      (abrirRonda pre-setea rn) y no avanzaría nunca */
@@ -1851,7 +1860,7 @@ function recibirMarcador(p){
     clearTimeout(SALA.hostTimer); clearTimeout(SALA.sigTimer);
     SALA.sigTimer=setTimeout(()=>abrirRonda(p.n+1), MARCADOR_MS);
   }
-  if(SALA.spec){ SALA.fase='marcador'; pintarEspectador(); return; }
+  if(SALA.spec){ SALA.fase='marcador'; if(!p.final) mostrarMk(p,false); pintarEspectador(); return; }
   if(!SALA.playing||p.n<SALA.rn) return;
   SALA.fase='marcador';
   const laPerdio=!S.respondida;
@@ -1866,19 +1875,62 @@ function recibirMarcador(p){
     mostrarMk(p, laPerdio);
   }, espera);
 }
+function mkCount(el, from, to, dur){
+  const t0=performance.now();
+  (function f(now){ const q=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-q,3);
+    el.textContent=Math.round(from+(to-from)*e).toLocaleString('es-UY');
+    if(q<1&&el.isConnected) requestAnimationFrame(f); })(t0);
+}
+/* coreografía del marcador: filas en el orden ANTERIOR → count-up de lo que ganaron → recién ahí
+   viajan a su posición nueva (el salto de puestos se VE) → nota final */
 function mostrarMk(p, laPerdio){
-  const mi=p.tabla.find(r=>r.id===SALA.id);
+  const spec=!!(SALA&&SALA.spec);
+  const mi=spec?null:p.tabla.find(r=>r.id===SALA.id);
+  const ov=$('mkOv'); ov.classList.toggle('spec',spec);
   $('mkKick').textContent='MARCADOR · PARADA '+(p.n+1)+' DE '+TOTAL_MESES;
-  $('mkRows').innerHTML=p.tabla.map((r,i)=>{
-    const d=r.dPos>0?`<span class="mkD up">▲${r.dPos}</span>`:(r.dPos<0?`<span class="mkD dn">▼${-r.dPos}</span>`:'<span class="mkD">—</span>');
-    return `<div class="mkRow${r.id===SALA.id?' yo':''}" style="animation-delay:${i*120}ms"><span class="mkPos dsp">${r.pos}º</span>${avSvg(r.av,'mkAv')}<span class="mkNom dsp">${r.ini}</span>${d}<span class="mkSc mono">${(r.score||0).toLocaleString('es-UY')}</span></div>`;
+  const rows=p.tabla, cont=$('mkRows');
+  cont.innerHTML=rows.map((r,i)=>{
+    const d=r.dPos>0?`<span class="mkD up">▲${r.dPos}</span>`:(r.dPos<0?`<span class="mkD dn">▼${-r.dPos}</span>`:'<span class="mkD">·</span>');
+    return `<div class="mkRow${!spec&&r.id===SALA.id?' yo':''}"><span class="mkPos dsp">${r.pos+(r.dPos||0)}º</span>${avSvg(r.av,'mkAv')}<span class="mkNom dsp">${r.ini}</span>${d}<span class="mkSc mono"></span></div>`;
   }).join('');
-  $('mkNota').textContent = laPerdio?'SE LES FUE LA RONDA · SIN PUNTOS Y SE CORTÓ LA RACHA'
-    : mi&&mi.pos===1?'VAN PRIMEROS · QUE DURE'
-    : mi?('VAN '+mi.pos+'º · A '+(p.tabla[0].score-mi.score).toLocaleString('es-UY')+' DEL 1º'):'';
-  $('mkOv').classList.add('on');
-  if(laPerdio) sfxNo(); else sfxWhoosh();
-  p.tabla.forEach((r,i)=>setTimeout(sfxTick,150+i*120));
+  $('mkNota').textContent='';
+  ov.classList.add('on');
+  const els=[...cont.children];
+  const step=(els[0]?els[0].offsetHeight:58)+10;
+  cont.style.height=(rows.length*step-10)+'px';
+  els.forEach((el,i)=>{
+    const r=rows[i], prevIdx=Math.min(rows.length-1,Math.max(0,(r.pos+(r.dPos||0))-1));
+    el.style.transition='none'; el.style.opacity='0';
+    el.style.transform=`translateY(${prevIdx*step}px)`;
+    const sc=el.querySelector('.mkSc');
+    const from=(r.pScore!=null?r.pScore:r.score);
+    sc.textContent=from.toLocaleString('es-UY');
+    if(r.score<0) sc.style.color='var(--rojo)';
+    setTimeout(()=>{ el.style.transition='opacity .25s'; el.style.opacity='1'; sfxTick(); },80+i*110);
+    setTimeout(()=>{ if(el.isConnected) mkCount(sc, from, r.score, 700); },900);
+  });
+  setTimeout(()=>{
+    if(!ov.classList.contains('on')) return;
+    els.forEach((el,i)=>{
+      const r=rows[i];
+      el.style.transition='opacity .25s, transform .35s cubic-bezier(.4,0,.2,1)';
+      el.style.transform=`translateY(${i*step}px)`;
+      el.querySelector('.mkPos').textContent=r.pos+'º';
+      if(r.dPos) setTimeout(sfxTick,i*70);
+    });
+    if(spec){ sfxWhoosh(); }
+    else if(mi&&mi.dPos>0) sfxCoin();
+    else if(mi&&mi.dPos<0) sfxMeh();
+  },1800);
+  setTimeout(()=>{
+    if(!ov.classList.contains('on')) return;
+    $('mkNota').textContent = laPerdio?'SE LES FUE LA RONDA · SIN PUNTOS Y SE CORTÓ LA RACHA'
+      : spec?(rows[0]?('¡'+rows[0].ini+' AL FRENTE!'):'')
+      : mi&&mi.pos===1?'VAN PRIMEROS · QUE DURE'
+      : mi&&p.tabla[0].score===mi.score?'EMPATADOS CON EL 1º · SE DEFINE EN LA PRÓXIMA'
+      : mi?('VAN '+mi.pos+'º · A '+(p.tabla[0].score-mi.score).toLocaleString('es-UY')+' DEL 1º'):'';
+  },2400);
+  if(laPerdio) sfxNo();
 }
 function cerrarMk(){ if(SALA) clearTimeout(SALA.mkT); $('mkOv').classList.remove('on'); }
 function pintarEspera(){
