@@ -322,7 +322,9 @@ body.j1 #hud{border-top-color:var(--rosa)}
 .avBtn svg{width:42px;height:42px}
 .avBtn .avN{font-size:8.5px;font-weight:800;letter-spacing:.4px;color:var(--tinta)}
 .avMini{width:16px;height:16px;vertical-align:-3px;margin-right:2px}
-.eAv{width:clamp(40px,5.5vw,64px);height:clamp(40px,5.5vw,64px);display:block;margin:0 auto 4px}
+.eAv{width:clamp(40px,5.5vw,64px);height:clamp(40px,5.5vw,64px);display:block;margin:0 auto 4px;transition:width .4s,height .4s}
+/* el ganador se lleva el sticker grande (y la corona que ya tenía) */
+.eCol.win .eAv,.dCol.win .eAv{width:clamp(64px,9vw,104px);height:clamp(64px,9vw,104px)}
 #goOv{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--tinta);z-index:66}
 #goOv.on{display:flex}
 #goOv .kick{color:var(--amarillo);font-weight:800;letter-spacing:3px;font-size:clamp(13px,2vw,18px)}
@@ -2103,7 +2105,7 @@ function pintarEspectador(){
   const cols=['var(--azul)','var(--rosa)','var(--verde)','var(--rojo)'];
   $('espCols').innerHTML=rows.map((r,i)=>{
     const dots=Array.from({length:5},(_,d)=>`<div class="hd${d<(r.marcas||0)?' m':''}"></div>`).join('');
-    return `<div class="eCol${r.caido?' caida':''}" style="border-top:12px solid ${cols[colorIdx[r.id]%4]}">
+    return `<div class="eCol${r.caido?' caida':''}${todos&&i===0?' win':''}" style="border-top:12px solid ${cols[colorIdx[r.id]%4]}">
       ${todos&&i===0?'<svg class="corona va"><use href="#i-corona"/></svg>':''}
       ${avSvg(r.av,'eAv')}
       <div class="nom dsp">${r.ini}</div>
@@ -2182,7 +2184,7 @@ function pintarPodio(){
   const cols=['var(--azul)','var(--rosa)','var(--verde)','var(--rojo)'];
   $('salaSub').textContent = todos?'AÑO TERMINADO · MISMOS EVENTOS PARA TODOS':'EN VIVO · MISMOS EVENTOS PARA TODOS';
   $('podioCols').innerHTML=rows.map((r,i)=>`
-    <div class="dCol${r.id===SALA.id?' yo':''}${r.caido?' caida':''}" style="border-top:10px solid ${cols[colorIdx[r.id]%4]}">
+    <div class="dCol${r.id===SALA.id?' yo':''}${r.caido?' caida':''}${todos&&i===0?' win':''}" style="border-top:10px solid ${cols[colorIdx[r.id]%4]}">
       ${todos&&i===0?'<svg class="corona va"><use href="#i-corona"/></svg>':''}
       ${avSvg(r.av,'eAv')}
       <div class="jn dsp">${r.ini}${r.id===SALA.id?' · VOS':''}</div>
