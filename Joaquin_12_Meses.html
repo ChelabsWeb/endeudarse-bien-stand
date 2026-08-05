@@ -293,8 +293,22 @@ body.j1 #hud{border-top-color:var(--rosa)}
 #lobbyCode{font-size:clamp(64px,14vw,150px);letter-spacing:14px;text-shadow:5px 5px 0 var(--amarillo);margin:0;line-height:1}
 #lobbyEstado{font-weight:800;letter-spacing:1.5px;color:var(--azul);min-height:1.4em;max-width:560px}
 #lobbyList{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-.lobJ{background:var(--papel2);border:3px solid var(--tinta);box-shadow:4px 4px 0 var(--tinta);border-radius:6px;padding:12px 22px;font-size:clamp(20px,3vw,28px)}
+.lobJ{background:var(--papel2);border:3px solid var(--tinta);box-shadow:4px 4px 0 var(--tinta);border-radius:6px;padding:10px 20px;font-size:clamp(18px,2.6vw,26px);display:flex;align-items:center;gap:10px}
 .lobJ.yo{background:var(--amarillo)}
+.lobJ svg{width:34px;height:34px;flex-shrink:0}
+.lobJ .sinAv{width:34px;height:34px;border:2px dashed var(--tinta);border-radius:50%;opacity:.4;display:grid;place-items:center;font-size:16px;font-weight:800}
+/* grilla de personajes (lobby sala v2) */
+#avTit{font-weight:800;letter-spacing:2px;font-size:clamp(11px,1.6vw,14px);color:var(--azul);margin-top:4px}
+#avGrid{display:grid;grid-template-columns:repeat(6,minmax(62px,84px));gap:10px;justify-content:center;margin:8px 0 4px}
+@media(max-width:600px){#avGrid{grid-template-columns:repeat(4,minmax(58px,1fr));width:100%}}
+.avBtn{background:var(--papel2);border:3px solid var(--tinta);border-radius:8px;box-shadow:4px 4px 0 var(--tinta);padding:7px 3px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .12s}
+.avBtn:active{transform:scale(.94)}
+.avBtn.sel{background:var(--amarillo);transform:translate(2px,2px);box-shadow:2px 2px 0 var(--tinta)}
+.avBtn.off{opacity:.35;pointer-events:none;box-shadow:none;transform:translate(3px,3px)}
+.avBtn svg{width:42px;height:42px}
+.avBtn .avN{font-size:8.5px;font-weight:800;letter-spacing:.4px;color:var(--tinta)}
+.avMini{width:16px;height:16px;vertical-align:-3px;margin-right:2px}
+.eAv{width:clamp(40px,5.5vw,64px);height:clamp(40px,5.5vw,64px);display:block;margin:0 auto 4px}
 #goOv{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--tinta);z-index:66}
 #goOv.on{display:flex}
 #goOv .kick{color:var(--amarillo);font-weight:800;letter-spacing:3px;font-size:clamp(13px,2vw,18px)}
@@ -313,6 +327,7 @@ body.j1 #hud{border-top-color:var(--rosa)}
 .mkRow.yo{background:var(--amarillo)}
 .mkRow.caida{opacity:.5}
 .mkPos{font-size:clamp(18px,3vw,26px);min-width:44px}
+.mkAv{width:34px;height:34px;flex-shrink:0}
 .mkNom{font-size:clamp(17px,2.6vw,24px);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mkD{font-weight:800;min-width:44px;text-align:center;font-size:clamp(13px,2vw,17px);opacity:.4}
 .mkD.up{color:var(--verdeTxt);opacity:1}
@@ -378,6 +393,106 @@ body.j1 #hud{border-top-color:var(--rosa)}
   <symbol id="i-vs" viewBox="0 0 24 24"><path d="M4 5l4 14M8 19l4-14M14 8c0-2 6-2 6 0s-6 3-6 5 6 2 6 0" transform="translate(0 3) scale(.8)"/></symbol>
   <symbol id="i-red" viewBox="0 0 24 24"><path d="M12 19h.01M8.8 15.5a4.5 4.5 0 0 1 6.4 0M5.6 12a9 9 0 0 1 12.8 0M2.5 8.5a13.5 13.5 0 0 1 19 0"/></symbol>
   <symbol id="i-preg" viewBox="0 0 24 24"><path d="M8.8 9a3.2 3.2 0 1 1 5 2.6c-1.1.8-1.8 1.4-1.8 2.9M12 18h.01"/></symbol>
+
+  <!-- ==== personajes de equipo (sala v2) · paleta oficial, 2 por color ==== -->
+  <symbol id="av-chancho" viewBox="0 0 48 48">
+    <path d="M11 9 L21 14 L13 20 Z" fill="#DA1556" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M37 9 L27 14 L35 20 Z" fill="#DA1556" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="24" cy="27" r="15" fill="#DA1556" stroke="#003B8B" stroke-width="2"/>
+    <circle cx="18" cy="22.5" r="2" fill="#003B8B"/><circle cx="30" cy="22.5" r="2" fill="#003B8B"/>
+    <ellipse cx="24" cy="30.5" rx="7" ry="5" fill="#FBF8EF" stroke="#003B8B" stroke-width="2"/>
+    <circle cx="21.4" cy="30.5" r="1.4" fill="#003B8B"/><circle cx="26.6" cy="30.5" r="1.4" fill="#003B8B"/>
+  </symbol>
+  <symbol id="av-flamenco" viewBox="0 0 48 48">
+    <path d="M15 44 C12 33 14 22 21 17" fill="none" stroke="#DA1556" stroke-width="7.5" stroke-linecap="round"/>
+    <circle cx="25" cy="14" r="9.5" fill="#DA1556" stroke="#003B8B" stroke-width="2"/>
+    <path d="M32.5 11.5 q7.5 .5 7 6 q-5.5 2-8.5-2 z" fill="#003B8B"/>
+    <circle cx="23.5" cy="12" r="3" fill="#FBF8EF" stroke="#003B8B" stroke-width="1.6"/>
+    <circle cx="24.2" cy="12.6" r="1.3" fill="#003B8B"/>
+  </symbol>
+  <symbol id="av-pulpo" viewBox="0 0 48 48">
+    <path d="M9 26 a15 15 0 0 1 30 0 v7 a3 3 0 0 1 -6 0 a3 3 0 0 1 -6 0 a3 3 0 0 1 -6 0 a3 3 0 0 1 -6 0 a3 3 0 0 1 -6 0 z" fill="#811DE6" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="18" cy="24" r="4.6" fill="#FBF8EF" stroke="#003B8B" stroke-width="2"/>
+    <circle cx="30" cy="24" r="4.6" fill="#FBF8EF" stroke="#003B8B" stroke-width="2"/>
+    <circle cx="18.8" cy="25" r="1.8" fill="#003B8B"/><circle cx="29.2" cy="25" r="1.8" fill="#003B8B"/>
+    <path d="M20 33 q4 2.5 8 0" fill="none" stroke="#003B8B" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="av-tibu" viewBox="0 0 48 48">
+    <path d="M4 16 L14 22 L14 27 L4 32 Q8 24 4 16 Z" fill="#811DE6" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M19 15 Q20 7 28 6 Q30 12 28 15 Z" fill="#811DE6" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M11 24 Q14 14 27 13 Q40 13 45 23 Q45 25 44 26 Q39 35 26 35 Q14 34 11 24 Z" fill="#811DE6" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="36" cy="20.5" r="2.9" fill="#FBF8EF" stroke="#003B8B" stroke-width="1.6"/>
+    <circle cx="36.6" cy="21" r="1.3" fill="#003B8B"/>
+    <path d="M30 29.8 L32.5 26.6 L34.2 29.4 L36.6 26.2 L38.3 28.8 L40.8 25.4 L42.8 26.2 Q39 31.5 30 31.6 Z" fill="#FBF8EF" stroke="#003B8B" stroke-width="1.6" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="av-zorro" viewBox="0 0 48 48">
+    <path d="M9 5 L20 11 L11 19 Z" fill="#F76025" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M39 5 L28 11 L37 19 Z" fill="#F76025" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M8 15 C14 11 34 11 40 15 C40 25 33 37 24 41 C15 37 8 25 8 15 Z" fill="#F76025" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M24 41 C20 37 18 32 19.5 29.5 C21.5 31 26.5 31 28.5 29.5 C30 32 28 37 24 41 Z" fill="#FBF8EF" stroke="#003B8B" stroke-width="1.8" stroke-linejoin="round"/>
+    <circle cx="17" cy="23" r="2" fill="#003B8B"/><circle cx="31" cy="23" r="2" fill="#003B8B"/>
+    <circle cx="24" cy="34" r="1.9" fill="#003B8B"/>
+  </symbol>
+  <symbol id="av-perro" viewBox="0 0 48 48">
+    <ellipse cx="9.5" cy="22" rx="5" ry="9.5" fill="#F76025" stroke="#003B8B" stroke-width="2"/>
+    <ellipse cx="38.5" cy="22" rx="5" ry="9.5" fill="#F76025" stroke="#003B8B" stroke-width="2"/>
+    <circle cx="24" cy="25" r="14" fill="#F76025" stroke="#003B8B" stroke-width="2"/>
+    <circle cx="18.5" cy="21.5" r="2" fill="#003B8B"/><circle cx="29.5" cy="21.5" r="2" fill="#003B8B"/>
+    <ellipse cx="24" cy="31" rx="6" ry="4.4" fill="#FBF8EF" stroke="#003B8B" stroke-width="1.8"/>
+    <circle cx="24" cy="29.5" r="1.7" fill="#003B8B"/>
+    <path d="M21.8 35.2 a2.2 2.2 0 0 0 4.4 0 v-2.6 h-4.4 z" fill="#DA1556" stroke="#003B8B" stroke-width="1.6" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="av-gato" viewBox="0 0 48 48">
+    <path d="M10 6 L21 11 L12 19 Z" fill="#FBC504" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M38 6 L27 11 L36 19 Z" fill="#FBC504" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="24" cy="26" r="15" fill="#FBC504" stroke="#003B8B" stroke-width="2"/>
+    <circle cx="18" cy="23" r="2" fill="#003B8B"/><circle cx="30" cy="23" r="2" fill="#003B8B"/>
+    <path d="M22.2 29 h3.6 L24 31.4 Z" fill="#003B8B"/>
+    <path d="M24 31.4 v1.6 M24 33 c-1.2 1.8-3.6 1.8-4.6 .4 M24 33 c1.2 1.8 3.6 1.8 4.6 .4" fill="none" stroke="#003B8B" stroke-width="1.7" stroke-linecap="round"/>
+    <path d="M5 25 l8 1 M5 31 l8 -1 M43 25 l-8 1 M43 31 l-8 -1" stroke="#003B8B" stroke-width="1.7" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="av-pato" viewBox="0 0 48 48">
+    <path d="M20 7 Q24 2 28 7 Q26 10 24 9 Q22 10 20 7 Z" fill="#FBC504" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="24" cy="24" r="14" fill="#FBC504" stroke="#003B8B" stroke-width="2"/>
+    <circle cx="18" cy="18.5" r="2" fill="#003B8B"/><circle cx="30" cy="18.5" r="2" fill="#003B8B"/>
+    <ellipse cx="24" cy="28" rx="10" ry="5" fill="#F76025" stroke="#003B8B" stroke-width="2"/>
+    <circle cx="21" cy="26.5" r="1" fill="#003B8B"/><circle cx="27" cy="26.5" r="1" fill="#003B8B"/>
+  </symbol>
+  <symbol id="av-rana" viewBox="0 0 48 48">
+    <circle cx="15.5" cy="13" r="6.5" fill="#74D526" stroke="#003B8B" stroke-width="2"/>
+    <circle cx="32.5" cy="13" r="6.5" fill="#74D526" stroke="#003B8B" stroke-width="2"/>
+    <ellipse cx="24" cy="28" rx="16" ry="13" fill="#74D526" stroke="#003B8B" stroke-width="2"/>
+    <circle cx="15.5" cy="12.5" r="3.2" fill="#FBF8EF" stroke="#003B8B" stroke-width="1.6"/>
+    <circle cx="32.5" cy="12.5" r="3.2" fill="#FBF8EF" stroke="#003B8B" stroke-width="1.6"/>
+    <circle cx="16" cy="13" r="1.5" fill="#003B8B"/><circle cx="32" cy="13" r="1.5" fill="#003B8B"/>
+    <path d="M14 29 Q24 37 34 29" fill="none" stroke="#003B8B" stroke-width="2.2" stroke-linecap="round"/>
+    <circle cx="19" cy="25" r="1.2" fill="#003B8B"/><circle cx="29" cy="25" r="1.2" fill="#003B8B"/>
+  </symbol>
+  <symbol id="av-loro" viewBox="0 0 48 48">
+    <path d="M20 9 Q17 4 14 5 M24 8 Q23 2 19 2.5 M28 9 Q29 3 33 4" fill="none" stroke="#DA1556" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="24" cy="26" r="15" fill="#74D526" stroke="#003B8B" stroke-width="2"/>
+    <circle cx="18" cy="22" r="5.2" fill="#FBF8EF" stroke="#003B8B" stroke-width="1.8"/>
+    <circle cx="30" cy="22" r="5.2" fill="#FBF8EF" stroke="#003B8B" stroke-width="1.8"/>
+    <circle cx="18.8" cy="23" r="1.9" fill="#003B8B"/><circle cx="29.2" cy="23" r="1.9" fill="#003B8B"/>
+    <path d="M19.5 29.5 q4.5-2.5 9 0 q1.5 5.5-4.5 8 q-6-2.5-4.5-8 z" fill="#F76025" stroke="#003B8B" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M20.5 33 q3.5 1.5 7 0" fill="none" stroke="#003B8B" stroke-width="1.4"/>
+  </symbol>
+  <symbol id="av-buho" viewBox="0 0 48 48">
+    <path d="M10 8 L18 13 L11 17 Z" fill="#003B8B" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M38 8 L30 13 L37 17 Z" fill="#003B8B" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <ellipse cx="24" cy="27" rx="15" ry="15.5" fill="#003B8B"/>
+    <circle cx="17.5" cy="23" r="6.6" fill="#FBF8EF" stroke="#003B8B" stroke-width="1.6"/>
+    <circle cx="30.5" cy="23" r="6.6" fill="#FBF8EF" stroke="#003B8B" stroke-width="1.6"/>
+    <circle cx="18.3" cy="23.5" r="2.5" fill="#003B8B"/><circle cx="29.7" cy="23.5" r="2.5" fill="#003B8B"/>
+    <path d="M24 28 L20.8 33 h6.4 Z" fill="#F76025" stroke="#003B8B" stroke-width="1.6" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="av-pingu" viewBox="0 0 48 48">
+    <ellipse cx="24" cy="25" rx="14.5" ry="17" fill="#003B8B"/>
+    <ellipse cx="24" cy="33.5" rx="8.5" ry="7.5" fill="#FBF8EF"/>
+    <circle cx="18.5" cy="19" r="3.4" fill="#FBF8EF"/><circle cx="29.5" cy="19" r="3.4" fill="#FBF8EF"/>
+    <circle cx="19.2" cy="19.6" r="1.5" fill="#003B8B"/><circle cx="28.8" cy="19.6" r="1.5" fill="#003B8B"/>
+    <path d="M24 22.5 L20.6 26 h6.8 Z" fill="#F76025" stroke="#003B8B" stroke-width="1.4" stroke-linejoin="round"/>
+  </symbol>
 </svg>
 
 <button class="btn" id="muteBtn" onclick="toggleMute()"><svg class="ic"><use id="muteIco" href="#i-son"/></svg></button>
@@ -533,6 +648,8 @@ body.j1 #hud{border-top-color:var(--rosa)}
   <div class="kick">SALA</div>
   <h1 class="dsp" id="lobbyCode"></h1>
   <div id="lobbyEstado">CONECTANDO…</div>
+  <div id="avTit">ELIJAN SU PERSONAJE</div>
+  <div id="avGrid"></div>
   <div id="lobbyList"></div>
   <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
     <button class="btn amarillo grande dsp" id="btnArrancar" style="display:none" onclick="arrancar()">¡Arrancar! <svg class="ic"><use href="#i-flecha"/></svg></button>
@@ -1309,7 +1426,7 @@ function finalizar(){
   regStats(S, rs.cat);
   if(SALA&&SALA.playing){
     SALA.playing=false;
-    const p={id:SALA.id, ini:SALA.ini, mes:TOTAL_MESES, score:S.score, fin:true, patrimonio:rs.patrimonio, int:Math.max(0,S.int), cat:rs.cat, marcas:S.marcas.length, med:S.medallas.length,
+    const p={id:SALA.id, ini:SALA.ini, av:SALA.av||null, mes:TOTAL_MESES, score:S.score, fin:true, patrimonio:rs.patrimonio, int:Math.max(0,S.int), cat:rs.cat, marcas:S.marcas.length, med:S.medallas.length,
              malas:S.malas.map((t,i)=>({t, lec:S.lecMalas[i]||''}))};
     SALA.prog[SALA.id]=p;
     SALA.ch.send({type:'broadcast', event:'fin', payload:p});
@@ -1420,10 +1537,20 @@ const SB_KEY='sb_publishable_ccIpVjzVTq9F4X9Epe8dbA_atsnVJ63';
    y manda el marcador ya ordenado. Los timers de las máquinas son cosméticos: el cierre es del host. */
 const RONDA_DUR=45, BOCHA_DUR=15, MARCADOR_MS=6000, FB_MIN_MS=2500;
 const BOCHA_IDX=8; /* ⚠️ posición de 'BOCHA' en armarPartida: si cambiás el orden de paradas, actualizá esto */
+/* personajes de equipo: 2 por color oficial; el sticker vive como <symbol id="av-K"> en el sprite */
+const AVATARES=[
+ {k:'chancho', n:'CHANCHO'}, {k:'flamenco',n:'FLAMENCO'},
+ {k:'pulpo',   n:'PULPO'},   {k:'tibu',    n:'TIBURÓN'},
+ {k:'zorro',   n:'ZORRO'},   {k:'perro',   n:'PERRO'},
+ {k:'gato',    n:'GATO'},    {k:'pato',    n:'PATO'},
+ {k:'rana',    n:'RANA'},    {k:'loro',    n:'LORO'},
+ {k:'buho',    n:'BÚHO'},    {k:'pingu',   n:'PINGÜINO'},
+];
+function avSvg(k,cls){ return k&&AVATARES.some(a=>a.k===k)?`<svg class="${cls||'avMini'}" aria-hidden="true"><use href="#av-${k}"/></svg>`:''; }
 let SALA=null, sbClient=null, sCode=[], sIni=[], sPaso=0;
 
 /* ---- identidad y snapshot por pestaña: un F5 en pleno taller no mata al equipo ---- */
-function salaSaveId(){ if(!SALA) return; try{ sessionStorage.setItem('bcu12m2_sala', JSON.stringify({code:SALA.code, id:SALA.id, ini:SALA.ini, spec:!!SALA.spec, ronda:SALA.ronda})); }catch(e){} }
+function salaSaveId(){ if(!SALA) return; try{ sessionStorage.setItem('bcu12m2_sala', JSON.stringify({code:SALA.code, id:SALA.id, ini:SALA.ini, spec:!!SALA.spec, ronda:SALA.ronda, av:SALA.av||null})); }catch(e){} }
 function salaSaved(){ try{ return JSON.parse(sessionStorage.getItem('bcu12m2_sala')||'null'); }catch(e){ return null; } }
 function salaSnap(){ if(!SALA||!S) return; try{ sessionStorage.setItem('bcu12m2_S', JSON.stringify({ronda:SALA.ronda, S})); }catch(e){} }
 function leerSnap(){ try{ return JSON.parse(sessionStorage.getItem('bcu12m2_S')||'null'); }catch(e){ return null; } }
@@ -1506,7 +1633,7 @@ function entrarSala(spec, revive){
     const id=revive?revive.id:Math.random().toString(36).slice(2,9);
     /* fase = estado LOCAL de esta máquina (ronda/esperando/marcador); rFase = ciclo de vida de la RONDA,
        que gobierna al host — separados porque un host que también juega pisa fase al responder */
-    SALA={code, ini, id, ronda:revive?(revive.ronda||0):0, players:{}, prog:{}, playing:false, festejado:false, spec:!!spec, timeouts:{}, lastProg:Date.now(),
+    SALA={code, ini, id, ronda:revive?(revive.ronda||0):0, av:revive?(revive.av||null):null, players:{}, prog:{}, playing:false, festejado:false, spec:!!spec, timeouts:{}, lastProg:Date.now(),
           fase:'lobby', rFase:'lobby', rn:-1, rondaT0:0, rondaDur:RONDA_DUR, esHost:false, prevTabla:null, pendRonda:null, fbT0:0,
           pollInt:null, hbInt:null, hostTimer:null, sigTimer:null, mkT:null};
     salaSaveId();
@@ -1515,7 +1642,15 @@ function entrarSala(spec, revive){
     if(spec) SALA.pollInt=setInterval(()=>pintarEspectador(),15000);
     ch.on('presence',{event:'sync'},()=>{ if(!SALA||SALA.ch!==ch) return;
       const st=ch.presenceState(); SALA.players={};
-      Object.keys(st).forEach(k=>{ if(st[k][0]&&!st[k][0].spec) SALA.players[k]={ini:st[k][0].ini}; });
+      Object.keys(st).forEach(k=>{ if(st[k][0]&&!st[k][0].spec) SALA.players[k]={ini:st[k][0].ini, av:st[k][0].av||null}; });
+      /* dos equipos eligieron el mismo personaje a la vez: lo pierde el de mayor id (determinista en todas) */
+      if(!SALA.spec&&SALA.av){
+        const rival=Object.keys(SALA.players).find(k=>k!==SALA.id&&SALA.players[k].av===SALA.av);
+        if(rival&&rival<SALA.id){
+          SALA.av=null; ch.track({ini:SALA.ini, spec:false, av:null}); salaSaveId();
+          sfxNo(); const le=$('lobbyEstado'); if($('lobby').classList.contains('on')){ le.textContent='¡SE LOS GANARON DE MANO! ELIJAN OTRO PERSONAJE'; }
+        }
+      }
       /* equipo desconectado a mitad de partida: a los 20s se marca caído (si no volvió) */
       Object.keys(SALA.prog).forEach(k=>{
         if(!SALA.prog[k].fin && !SALA.players[k] && !SALA.timeouts[k]){
@@ -1543,7 +1678,7 @@ function entrarSala(spec, revive){
     ch.on('broadcast',{event:'fin'},({payload})=>{ if(!SALA||SALA.ch!==ch) return; SALA.lastProg=Date.now(); SALA.prog[payload.id]=payload; pintarLive(); pintarPodio(); pintarEspectador(); });
     ch.subscribe(st=>{ if(!SALA||SALA.ch!==ch) return;
       if(st==='SUBSCRIBED'){
-        ch.track({ini, spec:!!spec});
+        ch.track({ini, spec:!!spec, av:SALA.av||null});
         if(revive&&revive.S&&!spec){ reanudarSala(revive); }
         else if(SALA.spec){ $('espEstado').textContent='ESPERANDO EQUIPOS…'; pintarEspectador(); }
         else { $('lobbyEstado').textContent='SALA ABIERTA · ESPERANDO A LAS OTRAS MÁQUINAS'; $('btnArrancar').style.display=''; }
@@ -1628,7 +1763,7 @@ function cerrarRonda(){
   if(!final) SALA.sigTimer=setTimeout(()=>abrirRonda(SALA.rn+1), MARCADOR_MS);
 }
 function armarTabla(){
-  const rows=rosterIds().map(k=>({id:k, ini:SALA.prog[k].ini, score:SALA.prog[k].score||0}));
+  const rows=rosterIds().map(k=>({id:k, ini:SALA.prog[k].ini, av:SALA.prog[k].av||null, score:SALA.prog[k].score||0}));
   rows.sort((a,b)=>b.score-a.score);
   const prev={}; (SALA.prevTabla||[]).forEach(r=>{ prev[r.id]=r.pos; });
   rows.forEach((r,i)=>{ r.pos=i+1; r.dPos=prev[r.id]?prev[r.id]-r.pos:0; });
@@ -1692,7 +1827,7 @@ function mostrarMk(p, laPerdio){
   $('mkKick').textContent='MARCADOR · PARADA '+(p.n+1)+' DE '+TOTAL_MESES;
   $('mkRows').innerHTML=p.tabla.map((r,i)=>{
     const d=r.dPos>0?`<span class="mkD up">▲${r.dPos}</span>`:(r.dPos<0?`<span class="mkD dn">▼${-r.dPos}</span>`:'<span class="mkD">—</span>');
-    return `<div class="mkRow${r.id===SALA.id?' yo':''}" style="animation-delay:${i*120}ms"><span class="mkPos dsp">${r.pos}º</span><span class="mkNom dsp">${r.ini}</span>${d}<span class="mkSc mono">${(r.score||0).toLocaleString('es-UY')}</span></div>`;
+    return `<div class="mkRow${r.id===SALA.id?' yo':''}" style="animation-delay:${i*120}ms"><span class="mkPos dsp">${r.pos}º</span>${avSvg(r.av,'mkAv')}<span class="mkNom dsp">${r.ini}</span>${d}<span class="mkSc mono">${(r.score||0).toLocaleString('es-UY')}</span></div>`;
   }).join('');
   $('mkNota').textContent = laPerdio?'SE LES FUE LA RONDA · SIN PUNTOS Y SE CORTÓ LA RACHA'
     : mi&&mi.pos===1?'VAN PRIMEROS · QUE DURE'
@@ -1730,10 +1865,51 @@ let lobbyPrev=0;
 function pintarLobby(){
   if(!SALA) return;
   const ks=Object.keys(SALA.players);
-  $('lobbyList').innerHTML=ks.map(k=>`<div class="lobJ dsp${k===SALA.id?' yo':''}">${SALA.players[k].ini}${k===SALA.id?' · VOS':''}</div>`).join('');
+  $('lobbyList').innerHTML=ks.map(k=>{
+    const p=SALA.players[k];
+    return `<div class="lobJ dsp${k===SALA.id?' yo':''}">${p.av?avSvg(p.av,'lobAv'):'<span class="sinAv">?</span>'}<span>${p.ini}${k===SALA.id?' · VOS':''}</span></div>`;
+  }).join('');
+  pintarAvGrid();
   if(ks.length>lobbyPrev&&lobbyPrev>0) sfxCoin();
   lobbyPrev=ks.length;
-  if(ks.length>1) $('lobbyEstado').textContent=ks.length+' MÁQUINAS CONECTADAS · CUANDO ESTÉN TODAS, ¡ARRANQUEN!';
+  if(ks.length>1&&!/GANARON/.test($('lobbyEstado').textContent)) $('lobbyEstado').textContent=ks.length+' MÁQUINAS CONECTADAS · CUANDO ESTÉN TODAS, ¡ARRANQUEN!';
+}
+function pintarAvGrid(){
+  if(!SALA||SALA.spec||!$('lobby').classList.contains('on')) return;
+  const g=$('avGrid');
+  const tomados={}; Object.keys(SALA.players).forEach(k=>{ if(k!==SALA.id&&SALA.players[k].av) tomados[SALA.players[k].av]=true; });
+  g.innerHTML='';
+  AVATARES.forEach(a=>{
+    const b=document.createElement('button');
+    b.className='avBtn'+(SALA.av===a.k?' sel':'')+(tomados[a.k]?' off':'');
+    b.setAttribute('aria-label',a.n);
+    b.innerHTML=`<svg><use href="#av-${a.k}"/></svg><span class="avN">${a.n}</span>`;
+    b.onclick=()=>elegirAv(a.k);
+    g.appendChild(b);
+  });
+}
+function elegirAv(k){
+  if(!SALA||!SALA.ch||SALA.spec) return;
+  if(Object.keys(SALA.players).some(id=>id!==SALA.id&&SALA.players[id].av===k)){ sfxNo(); return; }
+  SALA.av=(SALA.av===k)?null:k; /* tocar el propio lo suelta */
+  audioInit(); sfxCoin();
+  if(SALA.players[SALA.id]) SALA.players[SALA.id].av=SALA.av;
+  SALA.ch.track({ini:SALA.ini, spec:false, av:SALA.av}); salaSaveId();
+  pintarLobby();
+}
+/* al arrancar sin personaje elegido: asignación determinista (ids y catálogo ordenados → todas
+   las máquinas computan lo mismo sin mensajes extra) */
+function autoAv(){
+  if(!SALA||SALA.spec||SALA.av) return;
+  const ids=Object.keys(SALA.players).sort();
+  const usados=new Set(ids.map(id=>SALA.players[id].av).filter(Boolean));
+  const libres=AVATARES.map(a=>a.k).filter(k=>!usados.has(k));
+  const sinAv=ids.filter(id=>!SALA.players[id].av);
+  const mio=sinAv.indexOf(SALA.id);
+  if(mio<0||!libres.length) return;
+  SALA.av=libres[mio%libres.length];
+  if(SALA.players[SALA.id]) SALA.players[SALA.id].av=SALA.av;
+  SALA.ch.track({ini:SALA.ini, spec:false, av:SALA.av}); salaSaveId();
 }
 const arrancar=conLock(function(){
   if(!SALA||!SALA.ch) return;
@@ -1766,6 +1942,7 @@ function arrancarCuenta(){
 }
 function empezarSala(){
   DUELO=false; TRIVIA=false; $('hud').style.display=''; document.body.classList.remove('j0','j1');
+  autoAv(); /* quien no eligió personaje recibe uno (igual en todas las máquinas) */
   armarPartida(mulberry32(xmur3(SALA.code+'#'+SALA.ronda)()));
   S=nuevoEstado(); S.respondida=false; SALA.playing=true; SALA.rn=-1;
   $('salaLive').style.display='flex';
@@ -1780,7 +1957,7 @@ function scoreParcial(s){
   return Math.max(0,s.plata+s.fondo)+Math.round(s.fondo*0.5)-Math.round(Math.max(0,s.int)*1.5)-mReal*8000-mCons*3000+s.bonusRacha;
 }
 /* n = meses ya completados (0 a 12) */
-function salaProg(n){ if(!SALA||!SALA.playing||!SALA.ch) return; SALA.ch.send({type:'broadcast',event:'prog',payload:{id:SALA.id, ini:SALA.ini, mes:Math.min(n,TOTAL_MESES), rn:S.i, resp:!!S.respondida, score:scoreParcial(S), marcas:S.marcas.length}}); }
+function salaProg(n){ if(!SALA||!SALA.playing||!SALA.ch) return; SALA.ch.send({type:'broadcast',event:'prog',payload:{id:SALA.id, ini:SALA.ini, av:SALA.av||null, mes:Math.min(n,TOTAL_MESES), rn:S.i, resp:!!S.respondida, score:scoreParcial(S), marcas:S.marcas.length}}); }
 let salaTimerInt=null;
 /* cosmético: cuenta contra el rondaT0 que mandó el host; el cierre real lo decide el reloj del host */
 function armarTimer(){
@@ -1808,7 +1985,8 @@ function pintarEspectador(){
   const ids=[...new Set([...Object.keys(SALA.prog),...Object.keys(SALA.players)])];
   /* color estable por equipo (orden alfabético de id: idéntico en todas las máquinas) */
   const colorIdx=Object.fromEntries(ids.slice().sort().map((k,j)=>[k,j]));
-  const rows=ids.map(k=>({ ini:(SALA.players[k]&&SALA.players[k].ini)||(SALA.prog[k]&&SALA.prog[k].ini)||'???', ...(SALA.prog[k]||{score:0,mes:0,marcas:0}), en:!!SALA.prog[k], id:k }));
+  const rows=ids.map(k=>({ ini:(SALA.players[k]&&SALA.players[k].ini)||(SALA.prog[k]&&SALA.prog[k].ini)||'???', ...(SALA.prog[k]||{score:0,mes:0,marcas:0}), en:!!SALA.prog[k], id:k,
+    av:(SALA.prog[k]&&SALA.prog[k].av)||(SALA.players[k]&&SALA.players[k].av)||null }));
   rows.sort((a,b)=>(b.score||0)-(a.score||0));
   const jug=rows.filter(r=>r.en);
   const vivos=jug.filter(r=>!r.caido);
@@ -1821,6 +1999,7 @@ function pintarEspectador(){
     const dots=Array.from({length:5},(_,d)=>`<div class="hd${d<(r.marcas||0)?' m':''}"></div>`).join('');
     return `<div class="eCol${r.caido?' caida':''}" style="border-top:12px solid ${cols[colorIdx[r.id]%4]}">
       ${todos&&i===0?'<svg class="corona va"><use href="#i-corona"/></svg>':''}
+      ${avSvg(r.av,'eAv')}
       <div class="nom dsp">${r.ini}</div>
       <div class="sc"${(r.score||0)<0?' style="color:var(--rojo)"':''}>${(r.score||0).toLocaleString('es-UY')}</div>
       <div class="barra"><i style="width:${Math.round((r.fin?TOTAL_MESES:(r.mes||0))*100/TOTAL_MESES)}%"></i></div>
@@ -1881,14 +2060,15 @@ function revelarGanador(){
 function pintarLive(){
   if(!SALA) return;
   const arr=Object.values(SALA.prog).sort((a,b)=>b.score-a.score);
-  $('salaLive').innerHTML=arr.map((p,i)=>`<span class="lv${p.id===SALA.id?' yo':''}${p.fin?' fin':''}">${i+1}º ${p.ini} · ${p.fin?TOTAL_MESES:(p.mes||0)}/${TOTAL_MESES} · <span${p.score<0&&p.id!==SALA.id?' style="color:#FF9AC0"':''}>${p.score.toLocaleString('es-UY')}</span>${p.fin?' · FIN':''}</span>`).join('');
+  $('salaLive').innerHTML=arr.map((p,i)=>`<span class="lv${p.id===SALA.id?' yo':''}${p.fin?' fin':''}">${i+1}º ${avSvg(p.av)}${p.ini} · ${p.fin?TOTAL_MESES:(p.mes||0)}/${TOTAL_MESES} · <span${p.score<0&&p.id!==SALA.id?' style="color:#FF9AC0"':''}>${p.score.toLocaleString('es-UY')}</span>${p.fin?' · FIN':''}</span>`).join('');
 }
 function verPodio(){ show('salaFin'); pintarPodio(); }
 function pintarPodio(){
   if(!SALA||!$('salaFin').classList.contains('on')) return;
   const ids=[...new Set([...Object.keys(SALA.prog),...Object.keys(SALA.players)])];
   const colorIdx=Object.fromEntries(ids.slice().sort().map((k,j)=>[k,j]));
-  const rows=ids.map(k=>({ ini:(SALA.players[k]&&SALA.players[k].ini)||(SALA.prog[k]&&SALA.prog[k].ini)||'???', ...(SALA.prog[k]||{score:0,mes:0}), en:!!SALA.prog[k], id:k }));
+  const rows=ids.map(k=>({ ini:(SALA.players[k]&&SALA.players[k].ini)||(SALA.prog[k]&&SALA.prog[k].ini)||'???', ...(SALA.prog[k]||{score:0,mes:0}), en:!!SALA.prog[k], id:k,
+    av:(SALA.prog[k]&&SALA.prog[k].av)||(SALA.players[k]&&SALA.players[k].av)||null }));
   rows.sort((a,b)=>(b.score||0)-(a.score||0));
   const jugadas=rows.filter(r=>r.en);
   const vivas=jugadas.filter(r=>!r.caido);
@@ -1898,6 +2078,7 @@ function pintarPodio(){
   $('podioCols').innerHTML=rows.map((r,i)=>`
     <div class="dCol${r.id===SALA.id?' yo':''}${r.caido?' caida':''}" style="border-top:10px solid ${cols[colorIdx[r.id]%4]}">
       ${todos&&i===0?'<svg class="corona va"><use href="#i-corona"/></svg>':''}
+      ${avSvg(r.av,'eAv')}
       <div class="jn dsp">${r.ini}${r.id===SALA.id?' · VOS':''}</div>
       <div class="pts"${(r.score||0)<0?' style="color:var(--rojo)"':''}>${(r.score||0).toLocaleString('es-UY')} pts</div>
       ${r.fin
