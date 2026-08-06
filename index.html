@@ -404,24 +404,27 @@ body.j1 #hud{border-top-color:var(--rosa)}
 .eCol .sub{font-weight:700;font-size:clamp(14px,2vw,22px);color:var(--muted);letter-spacing:1px}
 .eCol .dots{display:flex;gap:5px;justify-content:center;margin-top:8px}
 .eCol .corona{position:absolute;top:-34px;left:50%;transform:translateX(-50%) rotate(-8deg);width:56px;height:56px;color:var(--amarillo);filter:drop-shadow(2px 2px 0 var(--tinta))}
-/* podio final del proyector: 2º-1º-3º con pedestales escalonados (el orden visual lo da CSS order;
-   el DOM queda ordenado por posición, que es lo que recorre revelarGanador) */
+/* podio final del proyector: podio LITERAL — bloques 2º-1º-3º que se tocan, el equipo parado arriba
+   y la medalla colgando sobre el bloque (el orden visual lo da CSS order; el DOM queda ordenado
+   por posición, que es lo que recorre revelarGanador) */
 #espectador.fin{justify-content:flex-start}
-#espCols.podio{align-items:flex-end;flex-wrap:nowrap;gap:14px;max-width:1000px}
-#espCols.podio .eCol{display:flex;flex-direction:column;justify-content:flex-end;flex:1;min-width:0;max-width:330px;padding:16px 14px 0}
-#espCols.podio .eCol .nom{font-size:clamp(20px,2.6vw,38px);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#espCols.podio .eCol .sc{font-size:clamp(26px,3.6vw,52px)}
-.eCol .ped{display:none}
-#espCols.podio .ped{display:flex;align-items:flex-start;justify-content:center;padding-top:6px;line-height:1;
-  margin:14px -14px 0;border-top:3px solid var(--tinta);background:var(--papel);font-size:clamp(18px,2.4vw,30px)}
-#espCols.podio .p1 .ped{height:clamp(76px,12vh,120px);background:var(--amarillo);font-size:clamp(26px,3.4vw,42px)}
-#espCols.podio .p2 .ped{height:clamp(52px,8vh,84px)}
-#espCols.podio .p3 .ped{height:clamp(38px,5.5vh,58px)}
-#espCols.podio .p4 .ped{height:clamp(26px,4vh,40px)}
-#espCols.podio .p1{order:2} #espCols.podio .p2{order:1} #espCols.podio .p3{order:3} #espCols.podio .p4{order:4}
-#espCols.podio .p2 .sc,#espCols.podio .p3 .sc,#espCols.podio .p4 .sc{font-size:clamp(24px,3vw,42px)}
-#espCols.podio .p2 .nom,#espCols.podio .p3 .nom,#espCols.podio .p4 .nom{font-size:clamp(18px,2.2vw,32px)}
-@media(max-width:700px){#espCols.podio{flex-wrap:wrap;align-items:flex-end}}
+#espCols.podio{align-items:flex-end;flex-wrap:nowrap;gap:0;max-width:940px}
+#espCols.podio .eCol{background:none;border:none;box-shadow:none;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex:1;min-width:0;max-width:310px}
+#espCols.podio .eCol .nom{font-size:clamp(19px,2.4vw,36px);max-width:94%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#espCols.podio .eCol .sc{font-size:clamp(22px,3vw,42px);margin:0}
+#espCols.podio .p1 .sc{font-size:clamp(26px,3.6vw,52px)}
+.pAv{width:clamp(60px,7.5vw,110px);height:clamp(60px,7.5vw,110px);display:block}
+#espCols.podio .p1 .pAv{width:clamp(84px,10.5vw,150px);height:clamp(84px,10.5vw,150px)}
+.pMed{width:clamp(46px,6vw,80px);height:clamp(46px,6vw,80px);margin:6px 0 -18px;position:relative;z-index:2;filter:drop-shadow(3px 3px 0 rgba(0,59,139,.3))}
+.bloque{width:100%;border:3px solid var(--tinta);background:var(--papel2);box-shadow:6px 6px 0 rgba(0,59,139,.28);display:flex;align-items:center;justify-content:center;margin-top:14px}
+#espCols.podio .p1 .bloque{height:clamp(120px,20vh,210px);background:var(--amarillo)}
+#espCols.podio .p2 .bloque{height:clamp(84px,14vh,150px)}
+#espCols.podio .p3 .bloque{height:clamp(58px,10vh,108px)}
+#espCols.podio .p4 .bloque{height:clamp(34px,6vh,64px)}
+.bloque .posN{font-size:clamp(34px,5.6vw,80px);color:var(--tinta);line-height:1}
+#espCols.podio .p4 .posN{font-size:clamp(18px,2.6vw,36px)}
+#espCols.podio .p1{order:2;z-index:1} #espCols.podio .p2{order:1} #espCols.podio .p3{order:3} #espCols.podio .p4{order:4}
+@media(max-width:700px){#espCols.podio{flex-wrap:wrap;align-items:flex-end;gap:10px}}
 #espMalas{width:100%;max-width:1100px;background:var(--papel2);border:3px solid var(--tinta);box-shadow:7px 7px 0 var(--tinta);padding:18px 22px;margin-top:6px}
 #espMalas .mTit{font-size:clamp(17px,2.4vw,24px);color:var(--rojo);margin-bottom:10px}
 #espMalas .mRow{border-top:2px dashed rgba(27,31,58,.3);padding:9px 0 7px}
@@ -456,6 +459,29 @@ body.j1 #hud{border-top-color:var(--rosa)}
   <symbol id="i-vs" viewBox="0 0 24 24"><path d="M4 5l4 14M8 19l4-14M14 8c0-2 6-2 6 0s-6 3-6 5 6 2 6 0" transform="translate(0 3) scale(.8)"/></symbol>
   <symbol id="i-red" viewBox="0 0 24 24"><path d="M12 19h.01M8.8 15.5a4.5 4.5 0 0 1 6.4 0M5.6 12a9 9 0 0 1 12.8 0M2.5 8.5a13.5 13.5 0 0 1 19 0"/></symbol>
   <symbol id="i-preg" viewBox="0 0 24 24"><path d="M8.8 9a3.2 3.2 0 1 1 5 2.6c-1.1.8-1.8 1.4-1.8 2.9M12 18h.01"/></symbol>
+
+  <!-- ==== medallas del podio (paleta oficial; plata = --muted) ==== -->
+  <symbol id="med-oro" viewBox="0 0 48 48">
+    <path d="M14 1 L22 1 L23 17 L16 20 Z" fill="#DA1556" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M34 1 L26 1 L25 17 L32 20 Z" fill="#003B8B" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="24" cy="31" r="13.5" fill="#FBC504" stroke="#003B8B" stroke-width="2.5"/>
+    <circle cx="24" cy="31" r="9.5" fill="none" stroke="#003B8B" stroke-width="1.6" opacity=".55"/>
+    <text x="24" y="37" text-anchor="middle" font-family="'Archivo Black',sans-serif" font-size="17" fill="#003B8B">1</text>
+  </symbol>
+  <symbol id="med-plata" viewBox="0 0 48 48">
+    <path d="M14 1 L22 1 L23 17 L16 20 Z" fill="#DA1556" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M34 1 L26 1 L25 17 L32 20 Z" fill="#003B8B" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="24" cy="31" r="13.5" fill="#5E6690" stroke="#003B8B" stroke-width="2.5"/>
+    <circle cx="24" cy="31" r="9.5" fill="none" stroke="#FBF8EF" stroke-width="1.6" opacity=".7"/>
+    <text x="24" y="37" text-anchor="middle" font-family="'Archivo Black',sans-serif" font-size="17" fill="#FBF8EF">2</text>
+  </symbol>
+  <symbol id="med-bronce" viewBox="0 0 48 48">
+    <path d="M14 1 L22 1 L23 17 L16 20 Z" fill="#DA1556" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M34 1 L26 1 L25 17 L32 20 Z" fill="#003B8B" stroke="#003B8B" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="24" cy="31" r="13.5" fill="#F76025" stroke="#003B8B" stroke-width="2.5"/>
+    <circle cx="24" cy="31" r="9.5" fill="none" stroke="#003B8B" stroke-width="1.6" opacity=".55"/>
+    <text x="24" y="37" text-anchor="middle" font-family="'Archivo Black',sans-serif" font-size="17" fill="#003B8B">3</text>
+  </symbol>
 
   <!-- ==== personajes de equipo (sala v2) · paleta oficial, 2 por color ==== -->
   <symbol id="av-chancho" viewBox="0 0 48 48">
@@ -1680,6 +1706,17 @@ function salaListo(){
   if(sPaso===0){ if(sCode.length!==4){ salaInvalido(0); return; } sPaso=1; sfxCoin(); pintarSala(); }
   else { if(sIni.join('').trim().length<2){ salaInvalido(1); return; } entrarSala(); }
 }
+/* teclado físico en la pantalla de código/nombre: espeja el teclado en pantalla
+   (Enter = LISTO, Backspace = ⌫, Esc = volver) */
+document.addEventListener('keydown',e=>{
+  if(!$('sala').classList.contains('on')) return;
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  if(e.key==='Enter'){ e.preventDefault(); salaListo(); }
+  else if(e.key==='Backspace'){ e.preventDefault(); salaKey(null); }
+  else if(e.key===' '){ e.preventDefault(); salaKey(' '); }
+  else if(e.key==='Escape'){ $('btnSalaVolver').onclick(); }
+  else if(/^[a-zñA-ZÑ]$/.test(e.key)) salaKey(e.key.toUpperCase());
+});
 function pintarSala(){
   $('btnProyector').style.display = sPaso===0?'':'none';
   const bv=$('btnSalaVolver');
@@ -2193,15 +2230,16 @@ function pintarEspectador(){
   /* al podio final suben solo los equipos que jugaron el año (uno que se conecta sobre el final quedaría como columna de 0) */
   $('espCols').innerHTML=(todos?rows.filter(r=>r.en):rows).map((r,i)=>{
     const dots=Array.from({length:5},(_,d)=>`<div class="hd${d<(r.marcas||0)?' m':''}"></div>`).join('');
-    /* final: podio con pedestales (el DOM queda por posición; el orden visual 2º-1º-3º lo da CSS) */
-    if(todos) return `<div class="eCol pCol p${Math.min(i+1,4)}${r.caido?' caida':''}${i===0?' win':''}" style="border-top:12px solid ${cols[colorIdx[r.id]%4]}">
+    /* final: podio literal (el DOM queda por posición; el orden visual 2º-1º-3º lo da CSS) —
+       equipo parado sobre su bloque, medalla colgando sobre el borde del bloque */
+    if(todos) return `<div class="eCol pCol p${Math.min(i+1,4)}${r.caido?' caida':''}${i===0?' win':''}">
       ${i===0?'<svg class="corona va"><use href="#i-corona"/></svg>':''}
-      ${avSvg(r.av,'eAv')}
+      ${avSvg(r.av,'pAv')}
       <div class="nom dsp">${r.ini}</div>
       <div class="sc"${(r.score||0)<0?' style="color:var(--rojo)"':''}>${(r.score||0).toLocaleString('es-UY')}</div>
-      <div class="sub">${r.caido?'SE DESCONECTÓ':'AÑO COMPLETO'}</div>
-      <div class="dots">${dots}</div>
-      <div class="ped dsp">${i+1}º</div>
+      ${r.caido?'<div class="sub">SE DESCONECTÓ</div>':''}
+      ${i<3?`<svg class="pMed" aria-hidden="true"><use href="#med-${['oro','plata','bronce'][i]}"/></svg>`:''}
+      <div class="bloque"><span class="posN dsp">${i+1}º</span></div>
     </div>`;
     return `<div class="eCol${r.caido?' caida':''}" style="border-top:12px solid ${cols[colorIdx[r.id]%4]}">
       ${avSvg(r.av,'eAv')}
