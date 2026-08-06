@@ -171,6 +171,7 @@ button{font-family:inherit;color:var(--tinta)}
 #fbMarca.va{display:inline-block;animation:stampIn .45s cubic-bezier(.36,0,.66,-.56) .45s both}
 #fbRacha{display:none;color:var(--tinta);font-weight:800;margin-top:10px;font-size:clamp(14px,2vw,17px);background:var(--amarillo);border:3px solid var(--tinta);box-shadow:3px 3px 0 var(--tinta);padding:8px 14px;border-radius:6px}
 #fbRacha.rota{background:var(--rojo);color:#fff}
+#fbVel{display:none;color:var(--tinta);font-weight:800;margin-top:10px;font-size:clamp(14px,2vw,17px);background:var(--verde);border:3px solid var(--tinta);box-shadow:3px 3px 0 var(--tinta);padding:8px 14px;border-radius:6px}
 #fbBig{transition:opacity .15s}
 #fbBig.pop{animation:chipPop .25s both}
 #fbTxt,#fbLec{transition:opacity .2s}
@@ -390,6 +391,11 @@ body.j1 #hud{border-top-color:var(--rosa)}
 #espectador{align-items:center;justify-content:center;padding:22px;gap:16px;overflow-y:auto}
 #espectador .kick{font-weight:800;letter-spacing:3px;color:var(--azul);font-size:clamp(13px,1.8vw,18px)}
 #espectador h2{font-size:clamp(30px,5vw,54px);text-shadow:3px 3px 0 var(--rosa);text-align:center}
+/* barra de tiempo de la ronda en el proyector: misma animación `vacia` del quiz,
+   sincronizada al rondaT0 del host con delay negativo */
+#espTimer{width:min(700px,90vw);height:18px;border:3px solid var(--tinta);border-radius:999px;overflow:hidden;background:var(--papel2);box-shadow:3px 3px 0 var(--tinta);flex-shrink:0}
+#espTimer i{display:block;height:100%;background:var(--azul);width:100%}
+#espTimer i.corre{animation:vacia linear forwards}
 /* invitación del proyector (pre-arranque): el código ES la pantalla, legible desde el fondo del salón */
 #espInvite{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
 #espInvCode{font-size:clamp(90px,22vw,260px);line-height:.95;letter-spacing:.08em;color:var(--tinta);text-shadow:8px 8px 0 var(--amarillo);margin-right:-.08em}
@@ -638,6 +644,7 @@ body.j1 #hud{border-top-color:var(--rosa)}
     <div id="fbLec"></div>
     <div id="fbMarca"><svg class="ic"><use href="#i-huella"/></svg> QUEDÓ MARCA EN TU HUELLA · 5 AÑOS</div>
     <div id="fbRacha"></div>
+    <div id="fbVel"></div>
     <br><button class="btn amarillo" id="fbBtn">Seguir <svg class="ic"><use href="#i-flecha"/></svg></button>
     <div id="fbEspera" style="display:none"></div>
   </div>
@@ -779,6 +786,7 @@ body.j1 #hud{border-top-color:var(--rosa)}
 <section class="screen" id="espectador">
   <div class="kick">SALA <span id="espCode"></span> · MISMOS EVENTOS PARA TODOS</div>
   <h2 class="dsp" id="espEstado">Conectando…</h2>
+  <div id="espTimer" style="display:none"></div>
   <div id="espInvite" style="display:none">
     <div id="espInvCode" class="dsp"></div>
     <div id="espInvHint">EN CADA MÁQUINA: <b>ENTRAR CON CÓDIGO</b> → ESTE CÓDIGO → PERSONAJE → <b>¡LISTOS!</b></div>
@@ -1226,7 +1234,7 @@ function armarPartida(rnd){
                 {...sorteo[3], mes:'MES 10'}, R(qz[2]), {...sorteo[4], mes:'MES 11'}, CORE_AGUI];
 }
 function verIntro(){ $('tecOverlay').classList.remove('on'); $('feedback').classList.remove('on'); show('intro'); }
-function nuevoEstado(){ return {i:0, plata:1200, fondo:0, int:0, marcas:[], flags:{}, malas:[], lecMalas:[], racha:0, mejorRacha:0, bonusRacha:0, medallas:[], ranked:false}; }
+function nuevoEstado(){ return {i:0, plata:1200, fondo:0, int:0, marcas:[], flags:{}, malas:[], lecMalas:[], racha:0, mejorRacha:0, bonusRacha:0, bonusVel:0, medallas:[], ranked:false}; }
 function empezar(){
   DUELO=false; TRIVIA=false; $('hud').style.display=''; document.body.classList.remove('j0','j1');
   armarPartida();
@@ -1385,6 +1393,14 @@ function elegir(oi, btn){
   let bonus=0;
   if(o.tag==='buena'){ S.racha++; S.mejorRacha=Math.max(S.mejorRacha,S.racha); if(S.racha>=3){ bonus=1500*(S.racha-2); S.bonusRacha+=bonus; S.plata+=bonus; /* a la billetera ya: así el prog de sala lo incluye; el feedback solo lo anuncia */ } }
   else if(o.tag==='mala'){ S.racha=0; S.malas.push(e.tit); S.lecMalas.push(r.lec); }
+  /* sala: bonus por velocidad SOLO en decisiones buenas (apurarse a una mala no paga) — hasta $2.000,
+     baja linealmente contra el reloj de la ronda. Va antes del salaProg para que el marcador lo incluya. */
+  velUlt=0;
+  if(SALA&&SALA.playing&&o.tag==='buena'&&SALA.rondaT0){
+    const t=(Date.now()-SALA.rondaT0)/1000;
+    velUlt=Math.max(0, Math.round(2000*(1-t/SALA.rondaDur)/100)*100);
+    S.bonusVel=(S.bonusVel||0)+velUlt;
+  }
   /* sala v2: la decisión se reporta al elegir (el host cierra la ronda cuando respondieron todos) */
   if(SALA&&SALA.playing){ S.respondida=true; SALA.fase='esperando'; SALA.fbT0=Date.now(); salaProg(S.i+1); salaSnap(); }
   setTimeout(()=>{
@@ -1401,7 +1417,7 @@ function hudHuella(nueva){
   const dots=$('huellaDots'); dots.innerHTML='';
   for(let i=0;i<5;i++){ const d=document.createElement('div'); d.className='hd'+(i<S.marcas.length?' m':''); if(nueva && i===S.marcas.length-1) d.classList.add('new'); dots.appendChild(d); }
 }
-let bonusPend=0;
+let bonusPend=0, velUlt=0;
 function abrirFeedback(tag, r, bonus, rachaRota){
   const fb=$('feedback');
   $('fbSello').textContent=pick(SELLOS[tag]);
@@ -1418,6 +1434,9 @@ function abrirFeedback(tag, r, bonus, rachaRota){
   if(bonus>0){ fr.style.display='block'; fr.classList.remove('rota'); fr.innerHTML=`<svg class="ic"><use href="#i-frio"/></svg> Racha ×${S.racha}: +$${bonus.toLocaleString('es-UY')} de bonus cabeza fría`; bonusPend=bonus; /* ya está en la billetera (elegir); acá solo se anuncia */ }
   else if(rachaRota>0){ fr.style.display='block'; fr.classList.add('rota'); fr.innerHTML=`<svg class="ic"><use href="#i-frio"/></svg> SE CORTÓ LA RACHA ×${rachaRota}`; bonusPend=0; }
   else { fr.style.display='none'; bonusPend=0; }
+  const fv=$('fbVel');
+  if(velUlt>0){ fv.style.display='block'; fv.innerHTML=`<svg class="ic"><use href="#i-llama"/></svg> RESPUESTA RÁPIDA: +$${velUlt.toLocaleString('es-UY')}`; }
+  else fv.style.display='none';
   /* coreografía: sello → número → qué pasó → la posta → recién ahí el botón */
   const big=$('fbBig'), ftx=$('fbTxt'), flc=$('fbLec'), btn=$('fbBtn');
   /* sala v2: no hay botón — el feedback es la sala de espera hasta que el host manda el marcador */
@@ -1520,7 +1539,7 @@ function calcResumen(s){
     s.medallas = MEDALLAS.filter(m=>m.c(s));
     const patrimonio=s.plata+s.fondo;
     const mReal=s.marcas.filter(m=>m!=='Consulta de crédito').length, mCons=s.marcas.length-mReal;
-    s.score = Math.max(0,patrimonio) + Math.round(s.fondo*0.5) - Math.round(Math.max(0,s.int)*1.5) - mReal*8000 - mCons*3000 + s.bonusRacha + s.medallas.length*2000;
+    s.score = Math.max(0,patrimonio) + Math.round(s.fondo*0.5) - Math.round(Math.max(0,s.int)*1.5) - mReal*8000 - mCons*3000 + s.bonusRacha + (s.bonusVel||0) + s.medallas.length*2000;
   }
   /* la consulta de crédito queda en el Clearing pero NO baja tu categoría BCU */
   return { patrimonio: s.plata+s.fondo, cat: Math.min(5, 1+s.marcas.filter(m=>m!=='Consulta de crédito').length+(s.flags.tarjetaViva?1:0)) };
@@ -1565,6 +1584,7 @@ function finalizar(){
     ['Marcas en la huella: −$8.000 cada una', -mReal*8000],
     ['Consultas de crédito: −$3.000 cada una', -mCons*3000],
     ['Bonus cabeza fría (rachas)', S.bonusRacha],
+    ['Bonus velocidad (decidir a tiempo)', S.bonusVel||0],
     ['Medallas: +$2.000 cada una', S.medallas.length*2000]
   ].filter(l=>l[1]!==0));
   setTimeout(()=>{ const rc=$('recibo'); if(rc&&rc.scrollIntoView) rc.scrollIntoView({behavior:'smooth',block:'center'}); }, 900);
@@ -2172,7 +2192,7 @@ function empezarSala(){
 /* mismo desglose que el score final, sin medallas (se otorgan al cierre) */
 function scoreParcial(s){
   const mReal=s.marcas.filter(m=>m!=='Consulta de crédito').length, mCons=s.marcas.length-mReal;
-  return Math.max(0,s.plata+s.fondo)+Math.round(s.fondo*0.5)-Math.round(Math.max(0,s.int)*1.5)-mReal*8000-mCons*3000+s.bonusRacha;
+  return Math.max(0,s.plata+s.fondo)+Math.round(s.fondo*0.5)-Math.round(Math.max(0,s.int)*1.5)-mReal*8000-mCons*3000+s.bonusRacha+(s.bonusVel||0);
 }
 /* n = meses ya completados (0 a 12) */
 function salaProg(n){ if(!SALA||!SALA.playing||!SALA.ch) return; SALA.ch.send({type:'broadcast',event:'prog',payload:{id:SALA.id, ini:SALA.ini, av:SALA.av||null, mes:Math.min(n,TOTAL_MESES), rn:S.i, resp:!!S.respondida, score:scoreParcial(S), marcas:S.marcas.length}}); }
@@ -2225,6 +2245,19 @@ function pintarEspectador(){
   $('espEstado').textContent = rows.length===0?'ESPERANDO EQUIPOS…' : todos?'¡AÑO TERMINADO!'
     : enJuego?(SALA.rFase==='ronda'&&SALA.rn>=0?'PARADA '+(SALA.rn+1)+' DE '+TOTAL_MESES+' · EN VIVO':(SALA.rFase==='marcador'?'MARCADOR':'EN VIVO'))
     : (nL===rows.length?'¡TODOS LISTOS!':'LISTOS '+nL+' DE '+rows.length+' EQUIPOS');
+  /* barra de tiempo: se rearma solo al cambiar de ronda (clave rn+rondaT0) — los repaints
+     por prog/presence no deben reiniciar la animación */
+  const tb=$('espTimer');
+  const conBarra=enJuego&&SALA.rFase==='ronda'&&SALA.rn>=0&&SALA.rondaT0>0;
+  tb.style.display=conBarra?'':'none';
+  if(conBarra){
+    const key=SALA.rn+':'+SALA.rondaT0;
+    if(tb.dataset.key!==key){
+      tb.dataset.key=key;
+      const e=Math.max(0,(Date.now()-SALA.rondaT0)/1000);
+      tb.innerHTML=`<i class="corre" style="animation-duration:${SALA.rondaDur}s;animation-delay:-${e.toFixed(2)}s"></i>`;
+    }
+  } else tb.dataset.key='';
   const cols=['var(--azul)','var(--rosa)','var(--verde)','var(--rojo)'];
   $('espCols').classList.toggle('podio', todos);
   /* al podio final suben solo los equipos que jugaron el año (uno que se conecta sobre el final quedaría como columna de 0) */
