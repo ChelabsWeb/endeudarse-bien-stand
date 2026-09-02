@@ -100,6 +100,19 @@ for (let n = 0; n < 15; n++) {
   if (rv.on && rv.rows >= 3 && rv.chips === 2 && rv.tabla === 'none') revealVisto++;
   if (n === 0) { await P.screenshot({ path: `${OUT}/e2e-proj-reveal.png` }); await A.screenshot({ path: `${OUT}/e2e-desk-reveal.png` }); await B.screenshot({ path: `${OUT}/e2e-mob-reveal.png` }); }
   if (n === 1) { await sleep(3800); await P.screenshot({ path: `${OUT}/e2e-proj-tabla.png` }); await B.screenshot({ path: `${OUT}/e2e-mob-tabla.png` }); }
+  if (n === 2) { /* pausa del facilitador: Charlar congela el marcador más allá de MARCADOR_MS; Espacio = Seguir */
+    await sleep(4200);
+    await P.evaluate(() => document.querySelector('#mkHold').click());
+    await sleep(11000);
+    const sigue = await P.evaluate(() => document.querySelector('#mkOv').classList.contains('on') && /PAUSA/.test(document.querySelector('#mkNota').textContent));
+    const aQuieto = await A.evaluate(() => document.querySelector('#mkOv').classList.contains('on'));
+    ok(sigue && aQuieto, 'Charlar congela el marcador en proyector y máquinas más allá de MARCADOR_MS');
+    await P.screenshot({ path: `${OUT}/e2e-proj-pausa.png` });
+    await P.keyboard.press('Space');
+    await A.waitForFunction(fresco, null, { timeout: 15000 });
+    ok(true, 'Seguir (Espacio) abre la parada siguiente');
+    continue;
+  }
   await P.waitForFunction(() => !document.querySelector('#mkOv').classList.contains('on'), null, { timeout: 30000 });
 }
 ok(pregVisto >= 13, `el proyector mostró la pregunta en vivo en ${pregVisto}/14 paradas`);
@@ -111,6 +124,8 @@ console.log('4. cierre');
 await A.waitForSelector('#final.on', { timeout: 30000 });
 await B.waitForSelector('#final.on', { timeout: 30000 });
 ok(true, 'las máquinas llegan a la constancia');
+await P.waitForSelector('#mkOv.on', { timeout: 30000 }).then(() => ok(true, 'el proyector muestra el reveal y la tabla de la última parada'), () => ok(false, 'el proyector muestra el reveal y la tabla de la última parada'));
+await P.waitForFunction(() => !document.querySelector('#mkOv').classList.contains('on'), null, { timeout: 30000 });
 await P.waitForSelector('#espCols.podio', { timeout: 30000 });
 await sleep(6000);
 const podio = await P.$$eval('#espCols.podio .eCol .nom', els => els.map(e => e.textContent));
