@@ -338,7 +338,7 @@ body.j1 #hud{border-top-color:var(--naranja)}
 .lobJ .okTag .ic{width:14px;height:14px;stroke-width:3}
 .lobJ.pend{opacity:.6}
 #btnArrancar.espera{background:var(--verde);transform:translateY(3px);box-shadow:none}
-#espArrancar.espera{background:var(--papel2);color:var(--muted);transform:translateY(3px);box-shadow:none;cursor:default}
+#espArrancar.espera,#espTrivia.espera{background:var(--papel2);color:var(--muted);transform:translateY(3px);box-shadow:none;cursor:default}
 #avTit{font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--violeta);margin-top:2px}
 #avGrid{display:grid;grid-template-columns:repeat(6,minmax(70px,96px));gap:10px;justify-content:center;margin:4px 0}
 #avGrid.denied{animation:bumpD .4s}
@@ -704,13 +704,14 @@ body.j1 #hud{border-top-color:var(--naranja)}
 
 <!-- ================= TRIVIA ================= -->
 <section class="screen" id="triviaFin">
-  <div class="kick">MODO PREGUNTAS · 10 CHEQUEOS RÁPIDOS</div>
+  <div class="kick" id="tfKick">MODO PREGUNTAS · 10 CHEQUEOS RÁPIDOS</div>
   <h2 class="dsp" id="tfTit"></h2>
   <div id="tfScore" class="mono dsp"></div>
   <div id="tfDetalle"></div>
   <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:16px">
-    <button class="btn amarillo grande dsp" onclick="empezarTrivia()"><svg class="ic"><use href="#i-replay"/></svg> Otra ronda</button>
-    <button class="btn" onclick="show('home')">Inicio</button>
+    <button class="btn amarillo grande dsp" id="btnTriviaOtra" onclick="empezarTrivia()"><svg class="ic"><use href="#i-replay"/></svg> Otra ronda</button>
+    <button class="btn amarillo grande dsp" id="btnPodioT" style="display:none" onclick="verPodio()"><svg class="ic"><use href="#i-red"/></svg> Podio de la sala</button>
+    <button class="btn" id="btnTriviaInicio" onclick="show('home')">Inicio</button>
   </div>
 </section>
 
@@ -744,7 +745,7 @@ body.j1 #hud{border-top-color:var(--naranja)}
 <div id="goOv">
   <div class="kick" id="goCode"></div>
   <div id="goN" class="dsp">3</div>
-  <div class="kick">MISMOS EVENTOS · GANA EL MEJOR AÑO</div>
+  <div class="kick" id="goKick2">MISMOS EVENTOS · GANA EL MEJOR AÑO</div>
 </div>
 
 <!-- ================= MARCADOR DE RONDA (sala v2) ================= -->
@@ -761,7 +762,8 @@ body.j1 #hud{border-top-color:var(--naranja)}
   <div id="salaSub"></div>
   <div id="podioCols"></div>
   <div id="salaFinBtns" style="margin-top:22px">
-    <button class="btn amarillo dsp" onclick="arrancar()"><svg class="ic"><use href="#i-replay"/></svg> Revancha · eventos nuevos</button>
+    <button class="btn amarillo dsp" id="btnRevancha" onclick="arrancar()"><svg class="ic"><use href="#i-replay"/></svg> Revancha · eventos nuevos</button>
+    <button class="btn dsp" onclick="arrancarTrivia()"><svg class="ic"><use href="#i-preg"/></svg> Preguntas relámpago</button>
     <button class="btn" onclick="abrirTeclado()"><svg class="ic"><use href="#i-copa"/></svg> Anotarme en el ranking</button>
     <button class="btn" onclick="salirSala(this)">Salir de la sala</button>
   </div>
@@ -782,6 +784,7 @@ body.j1 #hud{border-top-color:var(--naranja)}
   <div id="espMalas" style="display:none"></div>
   <div id="espBtns" style="margin-top:10px">
     <button class="btn amarillo grande dsp" id="espArrancar" style="display:none" onclick="arrancar()">¡Arrancar! <svg class="ic"><use href="#i-flecha"/></svg></button>
+    <button class="btn grande dsp" id="espTrivia" style="display:none" onclick="arrancarTrivia()"><svg class="ic"><use href="#i-preg"/></svg> Preguntas relámpago</button>
     <button class="btn" id="espSaltar" style="display:none" onclick="saltarRonda()">Saltar ronda</button>
     <button class="btn" id="espCerrar" style="display:none" onclick="cerrarAno()">Cerrar el año</button>
     <button class="btn amarillo" id="btnRetryE" style="display:none" onclick="reintentar()">Reintentar</button>
@@ -1243,17 +1246,21 @@ function empezarTrivia(){
 }
 function finalizarTrivia(){
   if(S.rendered) return; S.rendered=true;
-  const c=S.correctas||0;
+  const c=S.correctas||0, n=ordenEventos.length||10;
   let tit;
-  if(c===10) tit='CEREBRO BCU';
-  else if(c>=8) tit='CASI PERFECTO';
-  else if(c>=5) tit='VAS BIEN, VAS BIEN';
+  if(c===n) tit='CEREBRO BCU';
+  else if(c>=n*0.8) tit='CASI PERFECTO';
+  else if(c>=n/2) tit='VAS BIEN, VAS BIEN';
   else tit='LA HUELLA SE ENTRENA';
   $('tfTit').textContent=tit;
-  $('tfScore').textContent=c+'/10';
+  $('tfScore').textContent=c+'/'+n;
   $('tfDetalle').textContent='correctas · mejor racha ×'+S.mejorRacha+' · $'+Math.max(0,S.plata).toLocaleString('es-UY')+' de bonus acumulado';
+  /* en la sala: la trivia cierra con el podio, no con "otra ronda" */
+  const enSala=!!(SALA&&S.finSala);
+  $('tfKick').textContent=enSala?'PREGUNTAS RELÁMPAGO · SALA '+SALA.code:'MODO PREGUNTAS · 10 CHEQUEOS RÁPIDOS';
+  $('btnPodioT').style.display=enSala?'':'none'; $('btnTriviaOtra').style.display=enSala?'none':''; $('btnTriviaInicio').style.display=enSala?'none':'';
   show('triviaFin');
-  if(c>=8){ sfxFanfa(); confetti(60); } else if(c>=5) sfxCoin(); else sfxMeh();
+  if(c>=n*0.8){ sfxFanfa(); confetti(60); } else if(c>=n/2) sfxCoin(); else sfxMeh();
 }
 
 /* ================= DUELO ================= */
@@ -1541,14 +1548,22 @@ function calcResumen(s){
   return { patrimonio: s.plata+s.fondo, cat: Math.min(5, 1+s.marcas.filter(m=>m!=='Consulta de crédito').length+(s.flags.tarjetaViva?1:0)) };
 }
 function finalizar(){
-  if(TRIVIA){ finalizarTrivia(); return; }
+  if(TRIVIA){
+    if(SALA&&SALA.playing){
+      SALA.playing=false; S.score=scoreParcial(S); S.finSala=true;
+      const p={id:SALA.id, ini:SALA.ini, av:SALA.av||null, mes:NR(), score:S.score, fin:true, patrimonio:0, int:0, cat:'—', marcas:0, med:0,
+               correctas:S.correctas||0, total:ordenEventos.length, malas:S.malas.map((t,i)=>({t, lec:S.lecMalas[i]||''}))};
+      SALA.prog[SALA.id]=p; SALA.ch.send({type:'broadcast', event:'fin', payload:p});
+    }
+    finalizarTrivia(); return;
+  }
   if(S.rendered) return;
   S.rendered=true;
   const rs=calcResumen(S);
   regStats(S, rs.cat);
   if(SALA&&SALA.playing){
     SALA.playing=false;
-    const p={id:SALA.id, ini:SALA.ini, av:SALA.av||null, mes:TOTAL_MESES, score:S.score, fin:true, patrimonio:rs.patrimonio, int:Math.max(0,S.int), cat:rs.cat, marcas:S.marcas.length, med:S.medallas.length,
+    const p={id:SALA.id, ini:SALA.ini, av:SALA.av||null, mes:NR(), score:S.score, fin:true, patrimonio:rs.patrimonio, int:Math.max(0,S.int), cat:rs.cat, marcas:S.marcas.length, med:S.medallas.length,
              malas:S.malas.map((t,i)=>({t, lec:S.lecMalas[i]||''}))};
     SALA.prog[SALA.id]=p;
     SALA.ch.send({type:'broadcast', event:'fin', payload:p});
@@ -1665,6 +1680,12 @@ const SB_KEY='sb_publishable_ccIpVjzVTq9F4X9Epe8dbA_atsnVJ63';
    y manda el marcador ya ordenado. Los timers de las máquinas son cosméticos: el cierre es del host. */
 const RONDA_DUR=45, BOCHA_DUR=15, MARCADOR_MS=9500, FB_MIN_MS=2500, REVEAL_MS=3400;
 const BOCHA_IDX=8; /* ⚠️ posición de 'BOCHA' en armarPartida: si cambiás el orden de paradas, actualizá esto */
+/* Preguntas relámpago en la sala: TRIVIA_N chequeos a TRIVIA_DUR s, mismo protocolo de rondas */
+const TRIVIA_N=6, TRIVIA_DUR=20;
+const NR=()=>(SALA&&SALA.nRondas)?SALA.nRondas:TOTAL_MESES; /* paradas de la partida en curso */
+const lblP=()=>(SALA&&SALA.modo==='trivia')?'PREGUNTA':'PARADA';
+function esBocha(n){ return !!SALA&&SALA.modo!=='trivia'&&n===BOCHA_IDX; }
+function durRonda(n){ return esBocha(n)?BOCHA_DUR:(SALA&&SALA.modo==='trivia'?TRIVIA_DUR:RONDA_DUR); }
 /* personajes de equipo: 2 por color oficial; el sticker vive como <symbol id="av-K"> en el sprite */
 const AVATARES=[
  {k:'chancho', n:'CHANCHOS'},  {k:'flamenco',n:'FLAMENCOS'},
@@ -1679,7 +1700,7 @@ function avSvg(k,cls){ return k&&AVATARES.some(a=>a.k===k)?`<svg class="${cls||'
 let SALA=null, sbClient=null, sCode=[];
 
 /* ---- identidad y snapshot por pestaña: un F5 en pleno taller no mata al equipo ---- */
-function salaSaveId(){ if(!SALA) return; try{ sessionStorage.setItem('bcu12m2_sala', JSON.stringify({code:SALA.code, id:SALA.id, ini:SALA.ini, spec:!!SALA.spec, ronda:SALA.ronda, av:SALA.av||null})); }catch(e){} }
+function salaSaveId(){ if(!SALA) return; try{ sessionStorage.setItem('bcu12m2_sala', JSON.stringify({code:SALA.code, id:SALA.id, ini:SALA.ini, spec:!!SALA.spec, ronda:SALA.ronda, av:SALA.av||null, modo:SALA.modo||'anio', nRondas:SALA.nRondas||TOTAL_MESES, excl:SALA.excl||0, ultAnio:SALA.ultAnio||0})); }catch(e){} }
 function salaSaved(){ try{ return JSON.parse(sessionStorage.getItem('bcu12m2_sala')||'null'); }catch(e){ return null; } }
 function salaSnap(){ if(!SALA||!S) return; try{ sessionStorage.setItem('bcu12m2_S', JSON.stringify({ronda:SALA.ronda, S})); }catch(e){} }
 function leerSnap(){ try{ return JSON.parse(sessionStorage.getItem('bcu12m2_S')||'null'); }catch(e){ return null; } }
@@ -1781,7 +1802,7 @@ function entrarSala(spec, revive){
     const id=revive?revive.id:Math.random().toString(36).slice(2,9);
     /* fase = estado LOCAL de esta máquina (ronda/esperando/marcador); rFase = ciclo de vida de la RONDA,
        que gobierna al host — separados porque un host que también juega pisa fase al responder */
-    SALA={code, ini, id, ronda:revive?(revive.ronda||0):0, av:revive?(revive.av||null):null, listo:false, players:{}, prog:{}, playing:false, festejado:false, spec:!!spec, timeouts:{}, lastProg:Date.now(),
+    SALA={code, ini, id, ronda:revive?(revive.ronda||0):0, av:revive?(revive.av||null):null, modo:revive?(revive.modo||'anio'):'anio', nRondas:revive?(revive.nRondas||TOTAL_MESES):TOTAL_MESES, excl:revive?(revive.excl||0):0, ultAnio:revive?(revive.ultAnio||0):0, listo:false, players:{}, prog:{}, playing:false, festejado:false, spec:!!spec, timeouts:{}, lastProg:Date.now(),
           fase:'lobby', rFase:'lobby', rn:-1, rondaT0:0, rondaDur:RONDA_DUR, esHost:false, prevTabla:null, pendRonda:null, fbT0:0,
           pollInt:null, hbInt:null, hostTimer:null, sigTimer:null, mkT:null};
     salaSaveId();
@@ -1811,6 +1832,8 @@ function entrarSala(spec, revive){
     ch.on('broadcast',{event:'start'},({payload})=>{ if(!SALA||SALA.ch!==ch) return;
       if(payload.ronda<=SALA.ronda) return; /* doble tap / eco: una sola cuenta regresiva */
       SALA.ronda=payload.ronda; SALA.festejado=false; SALA.prog={};
+      SALA.modo=payload.modo||'anio'; SALA.nRondas=payload.n||(SALA.modo==='trivia'?TRIVIA_N:TOTAL_MESES); SALA.excl=payload.excl||0; SALA.modoPend=null;
+      if(SALA.modo==='anio') SALA.ultAnio=payload.ronda;
       SALA.rn=-1; SALA.fase='cuenta'; SALA.rFase='cuenta'; SALA.prevTabla=null; SALA.pendRonda=null;
       clearTimeout(SALA.hostTimer); clearTimeout(SALA.sigTimer); clearTimeout(SALA.mkT); cerrarMk();
       Object.values(SALA.timeouts).forEach(clearTimeout); SALA.timeouts={}; SALA.lastProg=Date.now();
@@ -1824,6 +1847,10 @@ function entrarSala(spec, revive){
       if(!SALA.playing && !SALA.spec && $('lobby').classList.contains('on')){ $('lobbyEstado').textContent='PARTIDA EN CURSO · CUANDO TERMINE ENTRAN EN LA REVANCHA'; $('btnArrancar').style.display='none'; }
       pintarLive(); pintarPodio(); pintarEspectador(); pintarEspera(); hostChequearCierre(); });
     ch.on('broadcast',{event:'fin'},({payload})=>{ if(!SALA||SALA.ch!==ch) return; SALA.lastProg=Date.now(); SALA.prog[payload.id]=payload; pintarLive(); pintarPodio(); pintarEspectador(); });
+    /* el proyector avisa cuando pausa el marcador: las máquinas lo muestran en la nota de la tabla */
+    ch.on('broadcast',{event:'pausa'},({payload})=>{ if(!SALA||SALA.ch!==ch||SALA.spec) return;
+      SALA.holdRemote=!!payload.on;
+      if(SALA.holdRemote&&$('mkOv').classList.contains('on')) $('mkNota').textContent='EL PROYECTOR HIZO UNA PAUSA · CHARLEMOS'; });
     ch.subscribe(st=>{ if(!SALA||SALA.ch!==ch) return;
       if(st==='SUBSCRIBED'){
         ch.track({ini, spec:!!spec, av:SALA.av||null, listo:false});
@@ -1837,15 +1864,15 @@ function entrarSala(spec, revive){
 }
 /* F5 a mitad de partida: reconstruir la partida desde la semilla y el snapshot, y esperar la ronda vigente */
 function reanudarSala(rev){
-  DUELO=false; TRIVIA=false; $('hud').style.display=''; document.body.classList.remove('j0','j1');
-  armarPartida(mulberry32(xmur3(SALA.code+'#'+SALA.ronda)())); SALA.evRonda=SALA.ronda;
+  DUELO=false; TRIVIA=(SALA.modo==='trivia'); $('hud').style.display=TRIVIA?'none':''; document.body.classList.remove('j0','j1');
+  armarSala();
   S=rev.S; SALA.playing=true; SALA.fase='esperando'; SALA.rFase='ronda'; SALA.rn=S.i;
   $('salaLive').style.display='flex';
   show('juego');
   $('evento').innerHTML='<div class="mesChip dsp pop">SALA '+SALA.code+'</div><h2 class="dsp">Reconectando con el año…</h2>';
   hud();
   /* si el F5 fue con la última parada ya respondida, el año está jugado: cerrar acá (el marcador final pudo pasar) */
-  if(S.respondida&&S.i>=TOTAL_MESES-1){ armarHeartbeat(); finalizar(); return; }
+  if(S.respondida&&S.i>=NR()-1){ armarHeartbeat(); finalizar(); return; }
   salaProg(S.respondida?S.i+1:S.i); armarHeartbeat();
   /* sin responder: re-abrir la parada en curso y que decidan en lo que queda de ronda */
   if(!S.respondida){
@@ -1874,12 +1901,12 @@ function chequearHost(){
 }
 function rosterIds(){ return SALA?Object.keys(SALA.prog).filter(k=>!SALA.prog[k].caido):[]; }
 function abrirRonda(n){
-  if(!SALA||!SALA.esHost||!SALA.ch||n>=TOTAL_MESES) return;
+  if(!SALA||!SALA.esHost||!SALA.ch||n>=NR()) return;
   SALA.adoptT0=0; /* ronda propia: el host ya tiene autoridad plena */
   SALA.hold=false; clearTimeout(SALA.finT);
   SALA.rn=n; SALA.rFase='ronda'; SALA.rondaT0=Date.now();
-  SALA.rondaDur=(n===BOCHA_IDX)?BOCHA_DUR:RONDA_DUR;
-  SALA.ch.send({type:'broadcast',event:'ronda',payload:{n, dur:SALA.rondaDur, tipo:n===BOCHA_IDX?'bocha':'decision'}});
+  SALA.rondaDur=durRonda(n);
+  SALA.ch.send({type:'broadcast',event:'ronda',payload:{n, dur:SALA.rondaDur, tipo:esBocha(n)?'bocha':'decision'}});
   hostProgramarCierre();
 }
 function hostProgramarCierre(){
@@ -1893,7 +1920,7 @@ function hostChequearCierre(){
      (el prog trae rn explícito; mes-1 es el fallback y puede quedar una atrás si nadie respondió aún) */
   if(SALA.rn<0&&!SALA.playing&&SALA.rFase!=='cuenta'){
     const rr=Object.values(SALA.prog).reduce((a,p)=>Math.max(a, p.rn!==undefined?p.rn:(p.mes||0)-1), -1);
-    if(rr>=0&&!Object.values(SALA.prog).every(p=>p.fin)){ SALA.rn=rr; SALA.rFase='ronda'; SALA.rondaT0=Date.now(); SALA.rondaDur=RONDA_DUR; SALA.adoptT0=Date.now(); hostProgramarCierre(); }
+    if(rr>=0&&!Object.values(SALA.prog).every(p=>p.fin)){ SALA.rn=rr; SALA.rFase='ronda'; SALA.rondaT0=Date.now(); SALA.rondaDur=durRonda(rr); SALA.adoptT0=Date.now(); hostProgramarCierre(); }
   }
   if(SALA.rFase!=='ronda') return;
   /* host adoptado: 7s de gracia antes de poder cerrar por completitud — que los heartbeats (cada 5s)
@@ -1905,8 +1932,8 @@ function hostChequearCierre(){
 function cerrarRonda(){
   if(!SALA||!SALA.esHost||SALA.rFase!=='ronda') return;
   clearTimeout(SALA.hostTimer);
-  const final=SALA.rn>=TOTAL_MESES-1;
-  if(SALA.rn===BOCHA_IDX&&!final){ SALA.rFase='entre'; SALA.sigTimer=setTimeout(()=>abrirRonda(SALA.rn+1),700); return; } /* la bocha pega igual en todos: sin marcador */
+  const final=SALA.rn>=NR()-1;
+  if(esBocha(SALA.rn)&&!final){ SALA.rFase='entre'; SALA.sigTimer=setTimeout(()=>abrirRonda(SALA.rn+1),700); return; } /* la bocha pega igual en todos: sin marcador */
   SALA.rFase='marcador';
   SALA.ch.send({type:'broadcast',event:'marcador',payload:{n:SALA.rn, final, tabla:armarTabla()}});
   if(!final) SALA.sigTimer=setTimeout(()=>abrirRonda(SALA.rn+1), MARCADOR_MS);
@@ -1940,7 +1967,7 @@ function recibirRonda(p){
     S.i++; S.respondida=false; S.bochaOk=false; S.ultOp=null; S.ultTag=null;
   }
   if(perdidas>0) S.racha=0;
-  SALA.rn=p.n; SALA.fase='ronda'; S.respondida=false;
+  SALA.rn=p.n; SALA.fase='ronda'; S.respondida=false; SALA.holdRemote=false;
   $('feedback').classList.remove('on'); $('feedback').style.display='none';
   salaProg(S.i); /* "estoy en la parada n, sin decidir": mantiene el roster del host al día */
   if(ordenEventos[S.i]==='BOCHA'){ S.bochaOk=false; mostrarBocha(); }
@@ -2018,14 +2045,14 @@ function mostrarMk(p, laPerdio){
   const conReveal=armarReveal(p), R=conReveal?REVEAL_MS:0;
   const ev=conReveal?evSala(p.n):null;
   cont.style.display=conReveal?'none':'';
-  $('mkKick').textContent=conReveal?('PARADA '+(p.n+1)+' DE '+TOTAL_MESES+' · '+(ev.skin==='quiz'?'CHEQUEO RÁPIDO':ev.tit)):('MARCADOR · PARADA '+(p.n+1)+' DE '+TOTAL_MESES);
+  $('mkKick').textContent=conReveal?(lblP()+' '+(p.n+1)+' DE '+NR()+' · '+(ev.skin==='quiz'?'CHEQUEO RÁPIDO':ev.tit)):('MARCADOR · '+lblP()+' '+(p.n+1)+' DE '+NR());
   if(conReveal&&spec) sfxWhoosh();
   const els=[...cont.children];
   let step=68;
   const tabla=()=>{
     if(!ov.classList.contains('on')) return;
     $('mkReveal').classList.remove('on'); cont.style.display='';
-    $('mkKick').textContent='MARCADOR · PARADA '+(p.n+1)+' DE '+TOTAL_MESES;
+    $('mkKick').textContent='MARCADOR · '+lblP()+' '+(p.n+1)+' DE '+NR();
     step=(els[0]?els[0].offsetHeight:58)+10;
     cont.style.height=(rows.length*step-10)+'px';
     els.forEach((el,i)=>{
@@ -2058,6 +2085,7 @@ function mostrarMk(p, laPerdio){
   if(spec&&p.final) SALA.finT=setTimeout(()=>{ if(SALA&&!SALA.hold){ cerrarMk(); pintarEspectador(); } }, R+7000);
   setTimeout(()=>{
     if(!ov.classList.contains('on')||(SALA&&SALA.hold)) return;
+    if(SALA&&SALA.holdRemote){ $('mkNota').textContent='EL PROYECTOR HIZO UNA PAUSA · CHARLEMOS'; return; }
     $('mkNota').textContent = laPerdio?'SE LES FUE LA RONDA · SIN PUNTOS Y SE CORTÓ LA RACHA'
       : spec&&p.final?'AHORA SÍ · ¿QUIÉN GANÓ EL AÑO?'
       : spec?(rows[0]?('¡'+rows[0].ini+' AL FRENTE!'):'')
@@ -2078,8 +2106,10 @@ function mkHoldToggle(){
     SALA.hold=true; clearTimeout(SALA.sigTimer); clearTimeout(SALA.finT);
     hb.classList.add('amarillo'); hb.innerHTML='Seguir <svg class="ic"><use href="#i-flecha"/></svg>';
     $('mkNota').textContent='PAUSA PARA CHARLAR · SEGUIR CUANDO QUIERAN';
+    SALA.ch.send({type:'broadcast',event:'pausa',payload:{on:true,n:SALA.rn}});
   } else {
     SALA.hold=false;
+    SALA.ch.send({type:'broadcast',event:'pausa',payload:{on:false,n:SALA.rn}});
     if(SALA.mkFinal){ cerrarMk(); pintarEspectador(); }
     else abrirRonda(SALA.rn+1);
   }
@@ -2211,12 +2241,16 @@ const arrancar=conLock(function(){
     arrancar._solo=true; $('lobbyEstado').textContent='SOS LA ÚNICA MÁQUINA · TOCÁ DE NUEVO PARA JUGAR IGUAL';
     setTimeout(()=>{ arrancar._solo=false; pintarLobby(); },4000); sfxNo(); return;
   }
-  SALA.ch.send({type:'broadcast',event:'start',payload:{ronda:SALA.ronda+1}});
+  const trivia=SALA.modoPend==='trivia';
+  SALA.ch.send({type:'broadcast',event:'start',payload:{ronda:SALA.ronda+1, modo:trivia?'trivia':'anio', n:trivia?TRIVIA_N:TOTAL_MESES, excl:trivia?(SALA.ultAnio||0):0}});
 });
+/* Preguntas relámpago: mismo arranque (ready-check, cuenta regresiva) con modo trivia */
+function arrancarTrivia(){ if(!SALA) return; SALA.modoPend='trivia'; arrancar(); setTimeout(()=>{ if(SALA&&SALA.fase!=='cuenta') SALA.modoPend=null; },600); }
 function arrancarCuenta(){
   const ov=$('goOv'); if(ov.classList.contains('on')) return;
   $('tecOverlay').classList.remove('on'); $('feedback').classList.remove('on'); $('feedback').style.display='none';
   $('goCode').textContent='SALA '+SALA.code+(SALA.ronda>1?' · RONDA '+SALA.ronda:'');
+  $('goKick2').textContent=SALA.modo==='trivia'?TRIVIA_N+' PREGUNTAS · GANA EL QUE MÁS SABE':'MISMOS EVENTOS · GANA EL MEJOR AÑO';
   ov.classList.add('on');
   const g=$('goN'); g.style.color='';
   const showN=v=>{ g.textContent=v; g.classList.remove('pop'); void g.offsetWidth; g.classList.add('pop'); };
@@ -2235,13 +2269,13 @@ function arrancarCuenta(){
   },1000);
 }
 function empezarSala(){
-  DUELO=false; TRIVIA=false; $('hud').style.display=''; document.body.classList.remove('j0','j1');
+  DUELO=false; TRIVIA=(SALA.modo==='trivia'); $('hud').style.display=TRIVIA?'none':''; document.body.classList.remove('j0','j1');
   autoAv(); /* quien no eligió equipo recibe uno (igual en todas las máquinas) */
-  armarPartida(mulberry32(xmur3(SALA.code+'#'+SALA.ronda)())); SALA.evRonda=SALA.ronda;
-  S=nuevoEstado(); S.respondida=false; SALA.playing=true; SALA.rn=-1;
+  armarSala();
+  S=nuevoEstado(); if(TRIVIA){ S.plata=0; S.correctas=0; } S.respondida=false; SALA.playing=true; SALA.rn=-1;
   $('salaLive').style.display='flex';
   show('juego');
-  $('evento').innerHTML='<div class="mesChip dsp pop">SALA '+SALA.code+'</div><h2 class="dsp">Ahí viene enero…</h2>';
+  $('evento').innerHTML='<div class="mesChip dsp pop">SALA '+SALA.code+'</div><h2 class="dsp">'+(TRIVIA?'Ahí viene la primera…':'Ahí viene enero…')+'</h2>';
   hud(); salaProg(0); armarHeartbeat(); salaSnap();
   if(SALA.pendRonda){ const p=SALA.pendRonda; SALA.pendRonda=null; recibirRonda(p); } /* la ronda 0 llegó durante la cuenta */
 }
@@ -2251,14 +2285,27 @@ function scoreParcial(s){
   return Math.max(0,s.plata+s.fondo)+Math.round(s.fondo*0.5)-Math.round(Math.max(0,s.int)*1.5)-mReal*8000-mCons*3000+s.bonusRacha+(s.bonusVel||0);
 }
 /* n = meses ya completados (0 a 12) */
-function salaProg(n){ if(!SALA||!SALA.playing||!SALA.ch) return; SALA.ch.send({type:'broadcast',event:'prog',payload:{id:SALA.id, ini:SALA.ini, av:SALA.av||null, mes:Math.min(n,TOTAL_MESES), rn:S.i, resp:!!S.respondida, score:scoreParcial(S), marcas:S.marcas.length,
+function salaProg(n){ if(!SALA||!SALA.playing||!SALA.ch) return; SALA.ch.send({type:'broadcast',event:'prog',payload:{id:SALA.id, ini:SALA.ini, av:SALA.av||null, mes:Math.min(n,NR()), rn:S.i, resp:!!S.respondida, score:scoreParcial(S), marcas:S.marcas.length,
   op:(S.respondida&&S.ultOp!=null)?S.ultOp:null, tag:S.respondida?(S.ultTag||null):null, racha:S.racha||0}}); }
 /* la partida de la sala es determinista (código#ronda): el proyector la reconstruye igual que las
    máquinas para mostrar la parada en vivo y el reveal, sin mensajes extra */
 function evSala(n){
   if(!SALA||!SALA.ronda) return null;
-  if(SALA.evRonda!==SALA.ronda){ armarPartida(mulberry32(xmur3(SALA.code+'#'+SALA.ronda)())); SALA.evRonda=SALA.ronda; }
+  if(SALA.evRonda!==SALA.ronda) armarSala();
   return ordenEventos[n]||null;
+}
+/* la partida de la sala según el modo. Preguntas relámpago sortea TRIVIA_N chequeos excluyendo los
+   recreos del último año jugado (excl = ronda de ese año; viaja en el start, así el que entra tarde
+   arma lo mismo) */
+function armarSala(){
+  const rnd=mulberry32(xmur3(SALA.code+'#'+SALA.ronda)());
+  if(SALA.modo==='trivia'){
+    let usados=new Set();
+    if(SALA.excl){ armarPartida(mulberry32(xmur3(SALA.code+'#'+SALA.excl)())); usados=new Set(ordenEventos.filter(e=>e&&e.skin==='quiz').map(e=>e.tit)); }
+    ordenEventos=shuffle(QUIZES.filter(q=>!usados.has(q.tit)),rnd).slice(0,TRIVIA_N).map((q,i)=>({...q, mes:'PREGUNTA '+(i+1)}));
+    bochaFix=null;
+  } else armarPartida(rnd);
+  SALA.evRonda=SALA.ronda;
 }
 /* proyector: los últimos 5 segundos se escuchan en el salón (las máquinas suelen estar en mute) */
 let specTimerInt=null;
@@ -2319,8 +2366,9 @@ function pintarEspectador(){
       ? rows.map(r=>`<div class="lobJ dsp${r.listo?'':' pend'}">${r.av?avSvg(r.av,'lobAv'):'<span class="sinAv">?</span>'}<span>${r.ini}</span>${r.listo?'<span class="okTag"><svg class="ic"><use href="#i-check"/></svg>LISTOS</span>':''}</div>`).join('')
       : '';
   }
-  $('espEstado').textContent = rows.length===0?'ESPERANDO EQUIPOS…' : todos?'¡AÑO TERMINADO!'
-    : enJuego?(SALA.rFase==='ronda'&&SALA.rn>=0?'PARADA '+(SALA.rn+1)+' DE '+TOTAL_MESES+' · EN VIVO':(SALA.rFase==='marcador'?'MARCADOR':'EN VIVO'))
+  const trivia=SALA.modo==='trivia';
+  $('espEstado').textContent = rows.length===0?'ESPERANDO EQUIPOS…' : todos?(trivia?'¡SE ACABARON LAS PREGUNTAS!':'¡AÑO TERMINADO!')
+    : enJuego?(SALA.rFase==='ronda'&&SALA.rn>=0?lblP()+' '+(SALA.rn+1)+' DE '+NR()+' · EN VIVO':(SALA.rFase==='marcador'?'MARCADOR':'EN VIVO'))
     : (nL===rows.length?'¡TODOS LISTOS!':'LISTOS '+nL+' DE '+rows.length+' EQUIPOS');
   /* barra de tiempo: se rearma solo al cambiar de ronda (clave rn+rondaT0) — los repaints
      por prog/presence no deben reiniciar la animación */
@@ -2354,6 +2402,7 @@ function pintarEspectador(){
       ${avSvg(r.av,'pAv')}
       <div class="nom dsp">${r.ini}</div>
       <div class="sc"${(r.score||0)<0?' style="color:var(--rojo)"':''}>${(r.score||0).toLocaleString('es-UY')}</div>
+      ${r.correctas!=null?'<div class="sub">'+r.correctas+' DE '+(r.total||NR())+' CORRECTAS</div>':''}
       ${r.caido?'<div class="sub">SE DESCONECTÓ</div>':''}
       ${i<3?`<svg class="pMed" aria-hidden="true"><use href="#med-${['oro','plata','bronce'][i]}"/></svg>`:''}
       <div class="bloque"><span class="posN dsp">${i+1}º</span></div>
@@ -2362,8 +2411,8 @@ function pintarEspectador(){
       ${avSvg(r.av,'eAv')}
       <div class="nom dsp">${r.ini}</div>
       <div class="sc"${(r.score||0)<0?' style="color:var(--rojo)"':''}>${(r.score||0).toLocaleString('es-UY')}</div>
-      <div class="barra"><i style="width:${Math.round((r.fin?TOTAL_MESES:(r.mes||0))*100/TOTAL_MESES)}%"></i></div>
-      <div class="sub">${r.caido?'SE DESCONECTÓ':(r.fin?'AÑO COMPLETO':(r.en?(r.mes>0?'LLEVA '+r.mes+' DE '+TOTAL_MESES:'ARRANCANDO…'):'EN LA SALA'))}</div>
+      <div class="barra"><i style="width:${Math.round((r.fin?NR():(r.mes||0))*100/NR())}%"></i></div>
+      <div class="sub">${r.caido?'SE DESCONECTÓ':(r.fin?(trivia?'TERMINÓ':'AÑO COMPLETO'):(r.en?(r.mes>0?'LLEVA '+r.mes+' DE '+NR():'ARRANCANDO…'):'EN LA SALA'))}</div>
       <div class="sub" style="margin-top:6px">HUELLA</div>
       <div class="dots">${dots}</div>
     </div>`;
@@ -2375,20 +2424,24 @@ function pintarEspectador(){
     jug.forEach(r=>(r.malas||[]).forEach(m=>{ if(!agg[m.t]) agg[m.t]={n:0, lec:m.lec}; agg[m.t].n++; }));
     const top=Object.entries(agg).sort((a,b)=>b[1].n-a[1].n).slice(0,3);
     ml.style.display='';
-    ml.innerHTML = '<div class="mTit dsp">DONDE MÁS NOS CLAVAMOS</div>' + (top.length
+    ml.innerHTML = '<div class="mTit dsp">'+(trivia?'LOS DATOS QUE MÁS FALLAMOS':'DONDE MÁS NOS CLAVAMOS')+'</div>' + (top.length
       ? top.map(([t,v])=>`<div class="mRow"><div class="mHead"><span class="mN dsp">${v.n} ${v.n===1?'EQUIPO':'EQUIPOS'}</span><b>${t}</b></div><div class="mLec"><b>La posta:</b> ${v.lec}</div></div>`).join('')
-      : '<div class="mRow"><div class="mLec"><b>Ningún equipo se clavó.</b> Partida impecable: cabeza fría colectiva.</div></div>')
-      + '<div class="mRow"><div class="mLec"><b>Para la ronda:</b> ¿a alguien le pasó esto en la vida real? ¿Qué cambiarían en enero?</div></div>';
+      : '<div class="mRow"><div class="mLec"><b>'+(trivia?'Nadie falló ninguna.':'Ningún equipo se clavó.')+'</b> '+(trivia?'Salón de cerebros BCU.':'Partida impecable: cabeza fría colectiva.')+'</div></div>')
+      + (trivia?'':'<div class="mRow"><div class="mLec"><b>Para la ronda:</b> ¿a alguien le pasó esto en la vida real? ¿Qué cambiarían en enero?</div></div>');
   } else ml.style.display='none';
   $('espCerrar').style.display = (enJuego && (jug.some(r=>r.caido) || Date.now()-SALA.lastProg>120000)) ? '' : 'none';
   $('espSaltar').style.display = (SALA.esHost&&SALA.rFase==='ronda'&&enJuego)?'':'none';
-  $('espSaltar').textContent = SALA.rn>=TOTAL_MESES-1?'Ver puntajes finales':'Saltar ronda';
+  $('espSaltar').textContent = SALA.rn>=NR()-1?'Ver puntajes finales':(trivia?'Saltar pregunta':'Saltar ronda');
   const listosOk=nL===rows.length&&rows.length>0;
   $('espArrancar').style.display = (rows.length>0&&!enJuego)?'':'none';
   $('espArrancar').classList.toggle('espera', !todos&&!listosOk);
-  $('espArrancar').innerHTML = todos?'Revancha · eventos nuevos <svg class="ic"><use href="#i-flecha"/></svg>'
-    : listosOk?'¡Arrancar! <svg class="ic"><use href="#i-flecha"/></svg>'
+  $('espArrancar').innerHTML = todos?((trivia?'Jugar el año':'Revancha · eventos nuevos')+' <svg class="ic"><use href="#i-flecha"/></svg>')
+    : listosOk?'¡Arrancar el año! <svg class="ic"><use href="#i-flecha"/></svg>'
     : 'ESPERANDO QUE TOQUEN ¡LISTOS!…';
+  /* Preguntas relámpago: desempate tras el podio, o partida corta por sí sola */
+  const et=$('espTrivia');
+  et.style.display = (rows.length>0&&!enJuego&&(todos||listosOk))?'':'none';
+  et.innerHTML = '<svg class="ic"><use href="#i-preg"/></svg> '+(todos&&trivia?'Otra de preguntas':'Preguntas relámpago');
   $('espectador').classList.toggle('fin', todos);
   /* el podio espera a que termine el marcador de la última parada (reveal + tabla) */
   if(todos&&!SALA.festejado&&!$('mkOv').classList.contains('on')){ SALA.festejado=true; revelarGanador(); }
@@ -2405,7 +2458,7 @@ function pintarEspPregunta(rows){
       let txt=e.txt;
       if(e.skin==='ticket'&&e.tkt){ const t=e.tkt; txt=t.h+': '+t.rows.map(r=>r.join(' ')).join(' · ')+(t.tot?' · '+t.tot.join(' '):'')+'. '+e.txt; }
       const ops=ordenOps(e,n).map((oi,pos)=>{ const o=e.ops[oi]; return `<div class="pOp${o.ad?' ad':''}"><span class="let dsp">${String.fromCharCode(65+pos)}</span><span><b>${o.t}</b>${o.d?`<span class="baja">${o.d}</span>`:''}</span></div>`; }).join('');
-      pq.innerHTML=`<div class="evTop"><div class="mesChip dsp">${e.mes} · ${n+1}/${TOTAL_MESES}</div></div><h3 class="pTit dsp">${e.tit}</h3><p class="pTxt">${txt}</p><div class="pOps tres">${ops}</div><div class="pEqs"></div>`;
+      pq.innerHTML=`<div class="evTop"><div class="mesChip dsp">${e.mes} · ${n+1}/${NR()}</div></div><h3 class="pTit dsp">${e.tit}</h3><p class="pTxt">${txt}</p><div class="pOps tres">${ops}</div><div class="pEqs"></div>`;
     }
   }
   const eqs=pq.querySelector('.pEqs');
@@ -2415,7 +2468,8 @@ function pintarEspPregunta(rows){
 /* el podio no se muestra de una: redoble, columnas en penumbra y reveal de atrás para adelante */
 function revelarGanador(){
   SALA.revelando=true;
-  $('espEstado').textContent='¿QUIÉN GANÓ EL AÑO?';
+  const triviaR=SALA.modo==='trivia';
+  $('espEstado').textContent=triviaR?'¿QUIÉN SABE MÁS?':'¿QUIÉN GANÓ EL AÑO?';
   const colsEls=[...document.querySelectorAll('#espCols .eCol')];
   const corona=document.querySelector('#espCols .corona');
   if(corona) corona.style.opacity='0';
@@ -2430,7 +2484,7 @@ function revelarGanador(){
       c.style.opacity = c.classList.contains('caida')?'.55':'1';
       if(esGanador){
         if(corona) corona.style.opacity='1';
-        $('espEstado').textContent='¡AÑO TERMINADO!';
+        $('espEstado').textContent=triviaR?'¡SE ACABARON LAS PREGUNTAS!':'¡AÑO TERMINADO!';
         sfxFanfa(); confetti(120);
       } else sfxTick();
     }, 1300+j*800);
@@ -2446,7 +2500,7 @@ function revelarGanador(){
 function pintarLive(){
   if(!SALA) return;
   const arr=Object.values(SALA.prog).sort((a,b)=>b.score-a.score);
-  $('salaLive').innerHTML=arr.map((p,i)=>`<span class="lv${p.id===SALA.id?' yo':''}${p.fin?' fin':''}">${i+1}º ${avSvg(p.av)}${p.ini} · ${p.fin?TOTAL_MESES:(p.mes||0)}/${TOTAL_MESES} · <span${p.score<0&&p.id!==SALA.id?' style="color:#FF9AC0"':''}>${p.score.toLocaleString('es-UY')}</span>${p.fin?' · FIN':''}</span>`).join('');
+  $('salaLive').innerHTML=arr.map((p,i)=>`<span class="lv${p.id===SALA.id?' yo':''}${p.fin?' fin':''}">${i+1}º ${avSvg(p.av)}${p.ini} · ${p.fin?NR():(p.mes||0)}/${NR()} · <span${p.score<0&&p.id!==SALA.id?' style="color:#FF9AC0"':''}>${p.score.toLocaleString('es-UY')}</span>${p.fin?' · FIN':''}</span>`).join('');
 }
 function verPodio(){ show('salaFin'); pintarPodio(); }
 function pintarPodio(){
@@ -2460,14 +2514,19 @@ function pintarPodio(){
   const vivas=jugadas.filter(r=>!r.caido);
   const todos=jugadas.some(r=>r.fin)&&vivas.length>0&&vivas.every(r=>r.fin);
   const cols=['var(--violeta)','var(--naranja)','var(--verde)','var(--rojo)'];
-  $('salaSub').textContent = todos?'AÑO TERMINADO · MISMOS EVENTOS PARA TODOS':'EN VIVO · MISMOS EVENTOS PARA TODOS';
+  const trivia=SALA.modo==='trivia';
+  $('salaSub').textContent = todos?(trivia?'PREGUNTAS RELÁMPAGO · TERMINADAS':'AÑO TERMINADO · MISMOS EVENTOS PARA TODOS'):'EN VIVO · MISMOS EVENTOS PARA TODOS';
+  $('btnRevancha').innerHTML='<svg class="ic"><use href="#i-replay"/></svg> '+(trivia?'Jugar el año':'Revancha · eventos nuevos');
   $('podioCols').innerHTML=rows.map((r,i)=>`
     <div class="dCol${r.id===SALA.id?' yo':''}${r.caido?' caida':''}${todos&&i===0?' win':''}" style="border-top:10px solid ${cols[colorIdx[r.id]%4]}">
       ${todos&&i===0?'<svg class="corona va"><use href="#i-corona"/></svg>':''}
       ${avSvg(r.av,'eAv')}
       <div class="jn dsp">${r.ini}${r.id===SALA.id?' · VOS':''}</div>
       <div class="pts"${(r.score||0)<0?' style="color:var(--rojo)"':''}>${(r.score||0).toLocaleString('es-UY')} pts</div>
-      ${r.fin
+      ${r.fin&&r.correctas!=null
+        ? `<div class="fila"><span>Correctas</span><span>${r.correctas} de ${r.total||NR()}</span></div>
+           ${todos&&i>0?`<div class="fila" style="color:var(--rojo);font-weight:800"><span>A ${(rows[0].score-r.score).toLocaleString('es-UY')} pts del 1º</span><span></span></div>`:''}`
+        : r.fin
         ? `<div class="fila"><span>Patrimonio</span><span>${fmt(r.patrimonio)}</span></div>
            <div class="fila"><span>Intereses regalados</span><span>${fmt(r.int)}</span></div>
            <div class="fila"><span>Categoría BCU</span><span>${r.cat}</span></div>
@@ -2475,7 +2534,7 @@ function pintarPodio(){
            <div class="fila"><span>Medallas</span><span>${r.med}</span></div>
            ${todos&&i>0?`<div class="fila" style="color:var(--rojo);font-weight:800"><span>A ${(rows[0].score-r.score).toLocaleString('es-UY')} pts del 1º</span><span></span></div>`:''}
            ${todos&&(r.score||0)<0?'<div class="fila" style="color:var(--rojo)"><span>Los intereses se comieron el año · revancha y lo dan vuelta</span></div>':''}`
-        : `<div class="fila" style="justify-content:center"><span>${r.caido?'SE DESCONECTÓ':(r.en?'JUGANDO · '+(r.mes||0)+'/'+TOTAL_MESES:'EN LA SALA · SIN ARRANCAR')}</span></div>`}
+        : `<div class="fila" style="justify-content:center"><span>${r.caido?'SE DESCONECTÓ':(r.en?'JUGANDO · '+(r.mes||0)+'/'+NR():'EN LA SALA · SIN ARRANCAR')}</span></div>`}
     </div>`).join('');
   if(todos&&!SALA.festejado){ SALA.festejado=true; if(rows[0]&&rows[0].id===SALA.id){ sfxFanfa(); confetti(60); } else sfxMeh(); }
 }
