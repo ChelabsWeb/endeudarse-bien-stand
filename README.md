@@ -13,7 +13,7 @@ Un solo archivo HTML, funciona **offline** en cualquier tablet o compu (también
 - **Modo Proyector**: una máquina extra entra a la sala en "solo mirar" (botón *Proyector* tras poner el código) y muestra la partida gigante para todo el grupo: la pregunta en vivo con sus opciones y quién ya respondió, el reveal de decisiones, el marcador y el podio con medallas. El facilitador arranca la partida (y la revancha) desde ahí.
 - **QR "llevate el juego"** en la constancia final: los participantes lo escanean y se llevan el juego al celular.
 - **Rejugable**: pool de 12 eventos de decisión (salen 5) + 12 "chequeos rápidos" con datos reales del BCU (salen 3 como "recreos") + el shock del Mes 7. 15 paradas por partida (~20 min en equipos).
-- **Modo Preguntas**: trivia relámpago de 10 chequeos rápidos sorteados, con racha y puntaje — ideal para el stand o como desempate del taller.
+- **Modo Preguntas**: trivia relámpago de 10 chequeos rápidos sorteados, con racha y puntaje — ideal para el stand. En la sala existe como **Preguntas relámpago**: 6 chequeos a 20 s sincronizados en todas las máquinas, con la respuesta revelada en el proyector y podio propio; sirve de desempate después del año (no repite los chequeos que ya salieron).
 - **Análisis en el proyector**: al terminar todos los equipos, el tablero muestra "dónde más nos clavamos" — los errores más repetidos entre equipos con su explicación ("la posta").
 - **PWA**: abierta una vez desde la URL, queda cacheada y funciona sin internet.
 - **Estadísticas del stand**: 5 toques en el membrete de la portada abren el panel del día (partidas, promedio, % huella limpia).
