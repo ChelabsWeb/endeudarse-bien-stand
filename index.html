@@ -329,6 +329,9 @@ body.j1 #hud{border-top-color:var(--naranja)}
 #lobby{align-items:center;justify-content:center;padding:20px;gap:14px;text-align:center;overflow-y:auto}
 #lobbyCode{font-size:clamp(48px,10vw,110px);letter-spacing:.14em;margin:0 -.14em 0 0;line-height:1}
 #lobbyEstado{font-weight:700;letter-spacing:.06em;font-size:clamp(13px,1.7vw,15px);color:var(--violeta);min-height:1.4em;max-width:560px;text-transform:uppercase}
+#lobbyVacia{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:520px}
+#lobbyVacia p{font-size:clamp(16px,2.2vw,20px);line-height:1.4;font-weight:500}
+#lobbyVaciaBtns{display:flex;flex-direction:column;align-items:center;gap:6px}
 #lobbyList{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .lobJ{background:var(--blanco);border:1.5px solid var(--linea2);border-radius:999px;padding:8px 18px 8px 10px;font-size:clamp(16px,2.3vw,22px);display:flex;align-items:center;gap:10px}
 .lobJ.yo{background:var(--amarillo);border-color:var(--tinta)}
@@ -732,6 +735,13 @@ body.j1 #hud{border-top-color:var(--naranja)}
   <div class="kick">SALA</div>
   <h1 class="dsp" id="lobbyCode"></h1>
   <div id="lobbyEstado">CONECTANDO…</div>
+  <div id="lobbyVacia" style="display:none">
+    <p>No encontramos ninguna partida con ese código. Son las 4 letras grandes que muestra el proyector, sin vocales.</p>
+    <div id="lobbyVaciaBtns">
+      <button class="btn amarillo grande dsp" onclick="cambiarCodigo()">Corregir el código</button>
+      <button class="btn link" onclick="abrirIgual()">Abrir la sala igual, sin proyector</button>
+    </div>
+  </div>
   <div id="avTit">ELIJAN SU EQUIPO</div>
   <div id="avGrid"></div>
   <div id="lobbyList"></div>
@@ -1769,7 +1779,7 @@ function limpiarTimersSala(){
   if(!SALA) return;
   Object.values(SALA.timeouts||{}).forEach(clearTimeout);
   clearInterval(SALA.pollInt); clearInterval(SALA.hbInt);
-  clearTimeout(SALA.hostTimer); clearTimeout(SALA.sigTimer); clearTimeout(SALA.mkT); clearTimeout(SALA.finT);
+  clearTimeout(SALA.hostTimer); clearTimeout(SALA.sigTimer); clearTimeout(SALA.mkT); clearTimeout(SALA.finT); clearTimeout(SALA.vacioT);
 }
 function reintentar(){
   $('btnRetryL').style.display='none'; $('btnRetryE').style.display='none';
@@ -1785,6 +1795,34 @@ function cerrarAno(){
   Object.values(SALA.prog).forEach(p=>{ if(!p.fin) p.caido=true; });
   pintarEspectador(); pintarPodio(); hostChequearCierre();
 }
+/* código que no corresponde a ninguna partida: el canal se abre con cualquier código, así que si a los
+   2,5 s no hay proyector ni otras máquinas, avisar en vez de dejar al equipo en una sala fantasma */
+function chequearSalaVacia(ch,id){
+  clearTimeout(SALA.vacioT);
+  SALA.vacioT=setTimeout(()=>{
+    if(!SALA||SALA.ch!==ch||SALA.spec||SALA.playing||SALA.vacia) return;
+    if(Object.keys(ch.presenceState()).some(k=>k!==id)) return;
+    SALA.vacia=true; ch.untrack(); sfxNo();
+    $('lobbyEstado').textContent='NO HAY NINGUNA PARTIDA CON EL CÓDIGO '+SALA.code;
+    ['avTit','avGrid','lobbyList','lobbyBtns'].forEach(k=>$(k).style.display='none');
+    $('lobbyVacia').style.display='';
+  },2500);
+}
+function cambiarCodigo(){
+  const code=SALA?SALA.code:'';
+  if(SALA){ limpiarTimersSala(); if(SALA.ch&&sbClient) sbClient.removeChannel(SALA.ch); }
+  SALA=null; salaWipe(); sfxTap();
+  sCode=code.split(''); armarTeclasSala(); pintarSala(); show('sala');
+}
+function abrirIgual(){
+  if(!SALA||!SALA.ch||!SALA.vacia) return;
+  SALA.vacia=false; sfxTap();
+  ['avTit','avGrid','lobbyList','lobbyBtns'].forEach(k=>$(k).style.display='');
+  $('lobbyVacia').style.display='none';
+  $('lobbyEstado').textContent='SALA ABIERTA · ESPERANDO A LAS OTRAS MÁQUINAS';
+  SALA.ch.track({ini:SALA.ini, spec:false, av:SALA.av||null, listo:SALA.listo});
+  pintarLobby();
+}
 /* revive: {code,id,ini,spec,ronda[,S]} guardado en sessionStorage — reentra como el mismo equipo tras un F5 */
 function entrarSala(spec, revive){
   const code=revive?revive.code:sCode.join(''), ini=spec?'PROYECTOR':(revive?revive.ini:'EQUIPO');
@@ -1794,6 +1832,7 @@ function entrarSala(spec, revive){
     $('lobbyCode').textContent=code;
     $('lobbyEstado').textContent='CONECTANDO…';
     $('lobbyList').innerHTML=''; $('btnArrancar').style.display='none';
+    $('lobbyVacia').style.display='none'; ['avTit','avGrid','lobbyList','lobbyBtns'].forEach(k=>$(k).style.display='');
     $('btnArrancar').textContent='¡Listos!'; $('btnArrancar').classList.remove('espera');
     show('lobby');
   }
@@ -1811,6 +1850,7 @@ function entrarSala(spec, revive){
     if(spec) SALA.pollInt=setInterval(()=>pintarEspectador(),15000);
     ch.on('presence',{event:'sync'},()=>{ if(!SALA||SALA.ch!==ch) return;
       const st=ch.presenceState(); SALA.players={};
+      if(SALA.vacia&&Object.keys(st).some(k=>k!==SALA.id)) abrirIgual();
       Object.keys(st).forEach(k=>{ if(st[k][0]&&!st[k][0].spec) SALA.players[k]={ini:st[k][0].ini, av:st[k][0].av||null, listo:!!st[k][0].listo}; });
       /* dos equipos eligieron el mismo personaje a la vez: lo pierde el de mayor id (determinista en todas) */
       if(!SALA.spec&&SALA.av){
@@ -1856,7 +1896,7 @@ function entrarSala(spec, revive){
         ch.track({ini, spec:!!spec, av:SALA.av||null, listo:false});
         if(revive&&revive.S&&!spec){ reanudarSala(revive); }
         else if(SALA.spec){ $('espEstado').textContent='ESPERANDO EQUIPOS…'; pintarEspectador(); }
-        else { $('lobbyEstado').textContent='SALA ABIERTA · ESPERANDO A LAS OTRAS MÁQUINAS'; $('btnArrancar').style.display=''; }
+        else { $('lobbyEstado').textContent='SALA ABIERTA · ESPERANDO A LAS OTRAS MÁQUINAS'; $('btnArrancar').style.display=''; if(!revive) chequearSalaVacia(ch,id); }
       }
       else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'){ $(SALA.spec?'espEstado':'lobbyEstado').textContent='SIN CONEXIÓN · REVISÁ EL INTERNET'; $(SALA.spec?'btnRetryE':'btnRetryL').style.display=''; }
     });
@@ -2181,7 +2221,7 @@ function pintarLobby(){
   if(ks.length>lobbyPrev&&lobbyPrev>0) sfxCoin();
   lobbyPrev=ks.length;
   const est=$('lobbyEstado');
-  if(ks.length>1&&!/GANARON|EN CURSO|ÚNICA/.test(est.textContent)){
+  if(ks.length>1&&!/GANARON|EN CURSO|ÚNICA|NINGUNA/.test(est.textContent)){
     const nL=ks.filter(k=>SALA.players[k].listo).length;
     est.textContent = nL===ks.length ? (haySpec()?'¡TODOS LISTOS! EL PROYECTOR ARRANCA LA PARTIDA':'¡TODOS LISTOS!')
       : 'LISTOS '+nL+' DE '+ks.length+' EQUIPOS · TOQUEN ¡LISTOS! CUANDO ESTÉN';
